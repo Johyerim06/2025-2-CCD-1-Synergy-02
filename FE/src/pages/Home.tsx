@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <View style={styles.container}>
       <Text>Welcome to BokjaApp!</Text>
-      <Text>이 화면은 Home.js 입니다.</Text>
+      <Text>이 화면은 Home.tsx 입니다.</Text>
       <StatusBar style="auto" />
     </View>
   );
@@ -20,3 +20,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
