@@ -1,10 +1,7 @@
 package com.synergy.bokja.controller;
 
 import com.synergy.bokja.auth.JwtTokenProvider;
-import com.synergy.bokja.dto.SideEffectPresetResponseDTO;
-import com.synergy.bokja.dto.UserInfoResponseDTO;
-import com.synergy.bokja.dto.UserSignupRequestDTO;
-import com.synergy.bokja.dto.UsersResponseDTO;
+import com.synergy.bokja.dto.*;
 import com.synergy.bokja.service.UserService;
 import lombok.RequiredArgsConstructor;
 import com.synergy.bokja.response.BaseResponse;
@@ -57,6 +54,100 @@ public class UserController {
         UserInfoResponseDTO result = userService.getUserInfo(uno);
         BaseResponse<UserInfoResponseDTO> response =
                 new BaseResponse<>(1000, "회원 정보 조회 성공", result);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/me/medication-times")
+    public ResponseEntity<?> setUserTime(@RequestHeader("Authorization") String token,
+                                         @RequestBody UserMedicationTimeRequestDTO request) {
+
+        String jwtToken = token.replace("Bearer ", "");
+        if (!jwtTokenProvider.validateToken(jwtToken)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid or expired token");
+        }
+
+        Long uno = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserMedicationTimeResponseDTO result = userService.setUserMedicineTime(uno, request);
+        BaseResponse<UserMedicationTimeResponseDTO> response =
+                new BaseResponse<>(1000, "복약 시간 설정 성공", result);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<?> updateUserInfo(@RequestHeader("Authorization") String token,
+                                            @RequestBody UserInfoRequestDTO request) {
+
+        String jwtToken = token.replace("Bearer ", "");
+        if (!jwtTokenProvider.validateToken(jwtToken)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid or expired token");
+        }
+
+        Long uno = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserInfoResponseDTO result = userService.updateUserInfo(uno, request);
+        BaseResponse<UserInfoResponseDTO> response =
+                new BaseResponse<>(1000, "회원 정보 수정 성공", result);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<?> deleteUser(@RequestHeader("Authorization") String token) {
+
+        String jwtToken = token.replace("Bearer ", "");
+        if (!jwtTokenProvider.validateToken(jwtToken)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid or expired token");
+        }
+
+        Long uno = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UsersResponseDTO result = userService.deleteUser(uno);
+        BaseResponse<UsersResponseDTO> response =
+                new BaseResponse<>(1000, "회원 탈퇴 성공", result);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/me/medication-times")
+    public ResponseEntity<?> getUserTime(@RequestHeader("Authorization") String token,
+                                         @RequestParam String type) {
+
+        String jwtToken = token.replace("Bearer ", "");
+        if (!jwtTokenProvider.validateToken(jwtToken)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid or expired token");
+        }
+
+        Long uno = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        getUserMedicationTimeResponseDTO result = userService.getUserMedicineTime(uno, type);
+        BaseResponse<getUserMedicationTimeResponseDTO> response =
+                new BaseResponse<>(1000, "복약 시간 조회 성공", result);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/me/medication-times/{utno}")
+    public ResponseEntity<?> updateUserTime(@RequestHeader("Authorization") String token,
+                                         @RequestBody updateUserMedicationTimeRequestDTO request) {
+
+        String jwtToken = token.replace("Bearer ", "");
+        if (!jwtTokenProvider.validateToken(jwtToken)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid or expired token");
+        }
+
+        Long uno = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        getUserMedicationTimeResponseDTO result = userService.updateUserMedicineTime(uno, request);
+        BaseResponse<getUserMedicationTimeResponseDTO> response =
+                new BaseResponse<>(1000, "복약 시간 수정 성공", result);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/me/medications")
+    public ResponseEntity<?> getUserMedications(@RequestHeader("Authorization") String token){
+
+        String jwtToken = token.replace("Bearer ", "");
+        if (!jwtTokenProvider.validateToken(jwtToken)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid or expired token");
+        }
+
+        Long uno = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserTodayMedicationResponseDTO result = userService.getUserTodayMedications(uno);
+        BaseResponse<UserTodayMedicationResponseDTO> response =
+                new BaseResponse<>(1000, "활성 복약 목록 조회 성공", result);
         return ResponseEntity.ok(response);
     }
 
