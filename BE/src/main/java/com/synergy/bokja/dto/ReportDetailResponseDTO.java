@@ -11,7 +11,8 @@ public class ReportDetailResponseDTO {
     private String hospital;
     private String category;
     private int taken;
-    private String start_date;
-    private String end_date;
-    private List<ColorDTO> colors;
+    private List<MedicineDTO> medicine;           // 약품 리스트
+    private List<ReportCycleDTO> cycle;           // 복약 주기
+    private List<ReportEffectWeekDTO> effects;    // 주차별 부작용
+    private String description;                   // 리포트 설명
 }

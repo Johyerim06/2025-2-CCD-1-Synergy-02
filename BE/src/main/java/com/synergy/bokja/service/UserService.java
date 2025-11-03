@@ -1,5 +1,6 @@
 package com.synergy.bokja.service;
 
+import com.synergy.bokja.dto.UserInfoResponseDTO;
 import com.synergy.bokja.dto.UserSignupRequestDTO;
 import com.synergy.bokja.entity.UserEntity;
 import com.synergy.bokja.repository.UserRepository;
@@ -37,4 +38,15 @@ public class UserService {
         return user != null;
     }
 
+    public UserInfoResponseDTO getUserInfo(Long uno) {
+
+        UserEntity info = userRepository.findByUno(uno);
+
+        return new UserInfoResponseDTO(
+                info.getUno(),
+                info.getName(),
+                info.getBirth(),
+                info.getPhone()
+        );
+    }
 }

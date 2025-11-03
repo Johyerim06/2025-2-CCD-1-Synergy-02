@@ -3,8 +3,7 @@ package com.synergy.bokja.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Getter
-@Setter
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
