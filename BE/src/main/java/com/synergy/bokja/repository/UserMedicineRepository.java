@@ -9,4 +9,5 @@ public interface UserMedicineRepository extends JpaRepository<UserMedicineEntity
     UserMedicineEntity findByUmno(Long umno);
     List<UserMedicineEntity> findAllByUser_Uno(Long uno);
     UserMedicineEntity findByUser_Uno(Long uno);
+    UserMedicineEntity findByUmnoAndUser_Uno(Long umno, Long uno);
 }
