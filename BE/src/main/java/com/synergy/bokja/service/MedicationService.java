@@ -1,16 +1,20 @@
 package com.synergy.bokja.service;
 
+import com.synergy.bokja.dto.*;
 import com.synergy.bokja.entity.*;
 import com.synergy.bokja.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.text.Normalizer;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ public class MedicationService {
     private final QuizRepository quizRepository;
     private final QuizOptionRepository quizOptionRepository;
     private final AlarmCombRepository alarmCombRepository;
+    private final CombinationRepository combinationRepository;
 
     /**
      * OCR + (임시 LLM 하드코딩) 처리:
@@ -177,7 +182,7 @@ public class MedicationService {
         // --- alarm ---
         DescriptionEntity alarm = new DescriptionEntity();
         alarm.getUserMedicine().setUmno(umno);
-        alarm.getEventName().setEnno(ENNO_ALARM);                  // ✅ 고정값 1
+        alarm.getEventName().setEnno(ENNO_ALARM);
         alarm.setDescription("복약알림예시스크립트입니다.");
         alarm.setCreated_at(now.toLocalDateTime());
         descriptionRepository.save(alarm);
@@ -185,7 +190,7 @@ public class MedicationService {
         // --- call ---
         DescriptionEntity call = new DescriptionEntity();
         call.getUserMedicine().setUmno(umno);
-        call.getEventName().setEnno(ENNO_CALL);                    // ✅ 고정값 3
+        call.getEventName().setEnno(ENNO_CALL);
         call.setDescription("AI전화알림예시스크립트입니다.");
         call.setCreated_at(now.toLocalDateTime());
         descriptionRepository.save(call);
@@ -214,7 +219,7 @@ public class MedicationService {
         QuizEntity quiz = new QuizEntity();
         quiz.getUserMedicine().setUmno(umno);
         quiz.setQuestion(question);
-        quiz.setType(resolveQuizTypeStrict(question)); // ✅ 병용주의/약효분류만
+        quiz.setType(resolveQuizTypeStrict(question));
         quizRepository.save(quiz);
 
         List<String> options = List.of("1번", "2번", "3번", "4번");
@@ -255,5 +260,126 @@ public class MedicationService {
         if (v > Integer.MAX_VALUE) return Integer.MAX_VALUE;
         if (v < 0) return 0;
         return (int) v;
+    }
+
+    @Transactional
+    public MedicationCategoryUpdateResponseDTO updateMedicationCategory(
+            Long uno, Long umno, MedicationCategoryUpdateRequestDTO request) {
+
+        String newCategory = request.getCategory();
+        if (!StringUtils.hasText(newCategory)) {
+            throw new IllegalArgumentException("카테고리는 비어 있을 수 없습니다.");
+        }
+        newCategory = newCategory.trim();
+        if (newCategory.length() > 20) {
+            throw new IllegalArgumentException("카테고리는 20자 이하여야 합니다.");
+        }
+
+        UserMedicineEntity ume = userMedicineRepository.findByUmnoAndUser_Uno(umno, uno);
+        if (ume == null) {
+            throw new IllegalArgumentException("해당 사용자의 복약 정보(umno=" + umno + ")를 찾을 수 없습니다.");
+        }
+
+        ume.setCategory(newCategory);
+
+        return new MedicationCategoryUpdateResponseDTO(
+                ume.getUser().getUno(),
+                ume.getUmno(),
+                ume.getCategory()
+        );
+    }
+
+    /**
+     * 상세 복약 정보 조회
+     * - 소유자(uno) 검증
+     * - comb: AlarmCombEntity의 활성 카운트 → "1일 N회"
+     * - 각 약에 대해:
+     *    - medicine_table: mdno, name, classification, image, information
+     *    - user_medicine_item_table: description (LLM 생성 X, DB 그대로)
+     *    - combination_table: ingredient가 NULL이 아닌 행만 대상으로
+     *        "약 이름 vs ingredient" 부분 일치 시 material 수집(중복 제거)
+     */
+    @Transactional(readOnly = true)
+    public MedicationDetailResponseDTO getMedicationDetail(Long uno, Long umno) {
+
+        // 복약 엔터티 조회
+        UserMedicineEntity userMedicine = userMedicineRepository.findByUmno(umno);
+        if (userMedicine == null || !Objects.equals(userMedicine.getUser().getUno(), uno)) {
+            throw new IllegalArgumentException("해당 복약 정보가 존재하지 않거나 접근 권한이 없습니다.");
+        }
+
+        // 복약에 포함된 약 리스트 조회
+        List<UserMedicineItemEntity> items = userMedicineItemRepository.findAllByUserMedicine_Umno(umno);
+
+        // 3comb 계산 (예: "breakfast,lunch")
+        AlarmCombEntity combEntity = userMedicine.getAlarmComb();
+
+        List<String> combList = new ArrayList<>();
+        if (Boolean.TRUE.equals(combEntity.getBreakfast())) combList.add("breakfast");
+        if (Boolean.TRUE.equals(combEntity.getLunch())) combList.add("lunch");
+        if (Boolean.TRUE.equals(combEntity.getDinner())) combList.add("dinner");
+        if (Boolean.TRUE.equals(combEntity.getNight())) combList.add("night");
+        String comb = String.join(",", combList);
+
+        // medicine + materials 매핑
+        List<MedicationDetailMedicineDTO> medicines = items.stream().map(item -> {
+            MedicineEntity med = item.getMedicine();
+
+            // information = medicine_table.description
+            String information = med.getDescription();
+
+            // description = user_medicine_item_table.description
+            String description = item.getDescription();
+
+            // 병용주의 원료(materials) 조회
+            String medNameNorm = normalizeKR(med.getName());
+            List<MaterialDTO> materials = combinationRepository.findAll().stream()
+                    .filter(c -> nameMatches(medNameNorm, c.getIngredient()) ||
+                            nameMatches(medNameNorm, c.getName()))
+                    .map(CombinationEntity::getMaterial)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .map(m -> new MaterialDTO(m.getMtno(), m.getName()))
+                    .collect(Collectors.toList());
+
+            return new MedicationDetailMedicineDTO(
+                    med.getMdno(),
+                    med.getName(),
+                    med.getClassification(),
+                    med.getImage(),
+                    information,   // ← medicine_table.description
+                    description,   // ← user_medicine_item_table.description
+                    materials
+            );
+        }).collect(Collectors.toList());
+
+        // 최종 DTO 반환
+        return new MedicationDetailResponseDTO(
+                userMedicine.getUmno(),
+                userMedicine.getHospital(),
+                userMedicine.getCategory(),
+                userMedicine.getTaken(),
+                comb,
+                medicines
+        );
+    }
+
+    // ==========================
+    // 🔹 문자열 정규화/매칭 유틸
+    // ==========================
+
+    /** 한글/영문/숫자만 남기고 공백·기호 제거, 정규화(NFKC), 소문자 */
+    private String normalizeKR(String s) {
+        if (s == null) return "";
+        String n = Normalizer.normalize(s, Normalizer.Form.NFKC).toLowerCase(Locale.ROOT);
+        return n.replaceAll("[^\\p{IsLetter}\\p{IsDigit}]", "");
+    }
+
+    /** 부분 일치 규칙: ingredient != null && (medName.contains(ingredient) || ingredient.contains(medName)) */
+    private boolean nameMatches(String medNameNorm, String ingredientRaw) {
+        if (ingredientRaw == null) return false;
+        String ing = normalizeKR(ingredientRaw);
+        if (ing.isEmpty() || medNameNorm.isEmpty()) return false;
+        return medNameNorm.contains(ing) || ing.contains(medNameNorm);
     }
 }

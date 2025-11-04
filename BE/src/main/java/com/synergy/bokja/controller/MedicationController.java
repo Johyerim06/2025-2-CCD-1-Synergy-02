@@ -1,8 +1,7 @@
 package com.synergy.bokja.controller;
 
 import com.synergy.bokja.auth.JwtTokenProvider;
-import com.synergy.bokja.dto.MedicationCreateRequestDTO;
-import com.synergy.bokja.dto.MedicationCreateResponseDTO;
+import com.synergy.bokja.dto.*;
 import com.synergy.bokja.response.BaseResponse;
 import com.synergy.bokja.service.MedicationService;
 import jakarta.validation.Valid;
@@ -14,7 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/medications")
+@RequestMapping("/users/me/medications")
 @RequiredArgsConstructor
 public class MedicationController {
 
@@ -26,14 +25,12 @@ public class MedicationController {
             @RequestHeader("Authorization") String authorization,
             @RequestBody @Valid MedicationCreateRequestDTO request
     ) {
-        // 1) 토큰 원복 및 유효성 재확인(기존 컨트롤러들과 동일 패턴)
         final String token = authorization.replace("Bearer ", "");
         if (!jwtTokenProvider.validateToken(token)) {
             // ReportController 컨벤션: 403 + 문자열
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("FORBIDDEN");
         }
 
-        // 2) SecurityContext에서 uno 추출(프로젝트 컨벤션)
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getPrincipal() == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("FORBIDDEN");
@@ -53,14 +50,68 @@ public class MedicationController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("FORBIDDEN");
         }
 
-        // 3) 서비스 위임
         final Long umno = medicationService.createFromImage(uno, request.getImg());
 
-        // 4) BaseResponse는 생성자로 반환(성공 코드 1000 컨벤션)
         BaseResponse<MedicationCreateResponseDTO> body =
                 new BaseResponse<>(1000, "이미지 업로드에 성공하였습니다.",
                         new MedicationCreateResponseDTO(umno));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
+    }
+
+    @PatchMapping("/{umno}")
+    public ResponseEntity<?> updateMedicationCategory(
+            @RequestHeader("Authorization") String token,
+            @PathVariable("umno") Long umno,
+            @RequestBody MedicationCategoryUpdateRequestDTO request) {
+
+        String jwtToken = token.replace("Bearer ", "");
+        if (!jwtTokenProvider.validateToken(jwtToken)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Invalid or expired token");
+        }
+
+        Long uno = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        MedicationCategoryUpdateResponseDTO result =
+                medicationService.updateMedicationCategory(uno, umno, request);
+
+        BaseResponse<MedicationCategoryUpdateResponseDTO> response =
+                new BaseResponse<>(1000, "복약 카테고리 수정에 성공하였습니다.", result);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/{umno}")
+    public ResponseEntity<?> getMedicationDetail(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable("umno") Long umno
+    ) {
+        final String token = authorization.replace("Bearer ", "");
+        if (!jwtTokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("FORBIDDEN");
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getPrincipal() == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("FORBIDDEN");
+        }
+
+        Long uno;
+        try {
+            Object p = auth.getPrincipal();
+            if (p instanceof Long) uno = (Long) p;
+            else if (p instanceof String) uno = Long.parseLong((String) p);
+            else uno = Long.parseLong(auth.getName());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("FORBIDDEN");
+        }
+
+        MedicationDetailResponseDTO result = medicationService.getMedicationDetail(uno, umno);
+
+        BaseResponse<MedicationDetailResponseDTO> response =
+                new BaseResponse<>(1000, "상세 복약 정보 조회에 성공하였습니다.", result);
+
+        return ResponseEntity.ok(response);
     }
 }
