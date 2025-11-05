@@ -2,150 +2,168 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  useWindowDimensions,
+  SafeAreaView,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../navigation/Router';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'OnboardingMorningTimeSet'>;
+interface OnboardingMorningTimeSetProps {
+  onNext?: () => void;
+}
 
-const timeOptions = [6, 7, 8, 9, 10, 11];
+export default function OnboardingMorningTimeSet({ onNext }: OnboardingMorningTimeSetProps) {
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const { width } = useWindowDimensions();
+  const isTablet = width > 600;
+  const MAX_WIDTH = isTablet ? 420 : 360;
 
-export default function OnboardingMorningTimeSet() {
-  const navigation = useNavigation<NavigationProp>();
-  const [selectedTime, setSelectedTime] = useState<number | null>(null);
+  const times = ['6시', '7시', '8시', '9시', '10시', '11시'];
 
-  const isNextButtonActive = selectedTime !== null;
+  const isButtonActive = selectedTime !== null;
 
-  const handleTimeSelect = (hour: number) => {
-    setSelectedTime(hour);
+  const handleTimeSelect = (time: string) => {
+    setSelectedTime(time);
   };
 
-  const handleNext = () => {
-    if (isNextButtonActive) {
-      console.log('선택된 아침 약 시간:', selectedTime);
-      navigation.navigate('OnboardingLunchTimeSet');
+  const handleSubmit = () => {
+    if (isButtonActive) {
+      console.log('선택된 시간:', selectedTime);
+      onNext?.();
     }
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
       
-      {/* 헤더 */}
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>복약 시간 설정</Text>
       </View>
 
-      <View style={styles.content}>
-        {/* 제목 */}
-        <Text style={styles.title}>아침 약 시간을 선택하세요.</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.pageWrapper, { maxWidth: MAX_WIDTH }]}>
+          {/* Title */}
+          <Text style={styles.title}>아침 약 시간을 선택하세요.</Text>
 
-        {/* 시간 버튼 그리드 */}
-        <View style={styles.timeButtonsContainer}>
-          {timeOptions.map((hour) => {
-            const isSelected = selectedTime === hour;
-            return (
-              <TouchableOpacity
-                key={hour}
-                style={[
-                  styles.timeButton,
-                  isSelected ? styles.timeButtonSelected : styles.timeButtonUnselected,
-                ]}
-                onPress={() => handleTimeSelect(hour)}
-              >
-                <Text
+          {/* Time Buttons Grid */}
+          <View style={styles.timeButtonsContainer}>
+            {times.map((time) => {
+              const isSelected = selectedTime === time;
+              return (
+                <TouchableOpacity
+                  key={time}
                   style={[
-                    styles.timeButtonText,
-                    isSelected ? styles.timeButtonTextSelected : styles.timeButtonTextUnselected,
+                    styles.timeButton,
+                    isSelected ? styles.timeButtonSelected : styles.timeButtonUnselected,
                   ]}
+                  onPress={() => handleTimeSelect(time)}
                 >
-                  {hour}시
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+                  <Text 
+                    style={[
+                      styles.timeButtonText,
+                      isSelected ? styles.timeButtonTextSelected : styles.timeButtonTextUnselected,
+                    ]}
+                  >
+                    {time}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
+      </ScrollView>
 
-        {/* 다음으로 버튼 */}
-        <TouchableOpacity
+      {/* Next Button */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity 
           style={[
             styles.nextButton,
-            isNextButtonActive ? styles.nextButtonActive : styles.nextButtonInactive,
-          ]}
-          onPress={handleNext}
-          disabled={!isNextButtonActive}
+            isButtonActive ? styles.nextButtonActive : styles.nextButtonInactive,
+          ]} 
+          onPress={handleSubmit}
+          disabled={!isButtonActive}
         >
           <Text style={styles.nextButtonText}>다음으로</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#f9fafb',
   },
   header: {
-    backgroundColor: '#ffffff',
+    width: '100%',
+    height: 56,
+    justifyContent: 'center' as any,
+    alignItems: 'center' as any,
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#eaeaea',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    marginTop: 24,
+    borderBottomColor: '#EAEAEA',
   },
   headerText: {
-    fontFamily: 'NotoSansKR',
     fontSize: 27,
-    fontWeight: '700',
-    color: '#1a1a1a',
+    fontWeight: '700' as any,
+    color: '#1A1A1A',
+    lineHeight: 32.4,
+    textAlign: 'center',
   },
-  content: {
-    flex: 1,
+  scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 40,
+    paddingTop: 48,
+    paddingBottom: 100,
+    alignItems: 'center' as any,
+    flexGrow: 1,
+  },
+  pageWrapper: {
+    width: '100%',
+    alignSelf: 'center',
   },
   title: {
-    fontFamily: 'NotoSansKR',
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '700' as any,
     color: '#1e2939',
-    textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: 24,
+    textAlign: 'left',
   },
   timeButtonsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 40,
-    paddingHorizontal: 16,
+    width: '100%',
+    flexDirection: 'row' as any,
+    flexWrap: 'wrap' as any,
+    justifyContent: 'space-between' as any,
   },
   timeButton: {
-    width: 148,
-    height: 128,
+    width: 164,
+    height: 144,
     borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ffcc02',
+    justifyContent: 'center' as any,
+    alignItems: 'center' as any,
     marginBottom: 24,
-    marginHorizontal: 12,
   },
   timeButtonSelected: {
     backgroundColor: '#60584d',
+    borderColor: '#60584d',
   },
   timeButtonUnselected: {
     backgroundColor: '#ffcc02',
+    borderColor: '#ffcc02',
   },
   timeButtonText: {
-    fontFamily: 'NotoSansKR',
     fontSize: 48,
-    fontWeight: '700',
+    fontWeight: '700' as any,
+    lineHeight: 57.6,
   },
   timeButtonTextSelected: {
     color: '#ffffff',
@@ -153,15 +171,20 @@ const styles = StyleSheet.create({
   timeButtonTextUnselected: {
     color: '#545045',
   },
+  buttonContainer: {
+    position: 'absolute' as any,
+    left: 16,
+    right: 16,
+    bottom: 36,
+    alignItems: 'center' as any,
+  },
   nextButton: {
-    width: 320,
+    width: '100%',
+    maxWidth: 360,
     height: 66,
     borderRadius: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
-    marginTop: 'auto',
-    marginBottom: 40,
+    justifyContent: 'center' as any,
+    alignItems: 'center' as any,
   },
   nextButtonActive: {
     backgroundColor: '#60584d',
@@ -170,10 +193,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#c4bcb1',
   },
   nextButtonText: {
-    fontFamily: 'NotoSansKR',
     fontSize: 27,
-    fontWeight: '700',
+    fontWeight: '700' as any,
     color: '#ffffff',
+    lineHeight: 32.4,
   },
 });
-

@@ -13,18 +13,19 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import Svg, { Path, Rect } from 'react-native-svg';
 
-interface OnboardingSignUpProps {
-  onSignUpComplete?: () => void;
+interface UserInfoEditProps {
+  onComplete?: () => void;
 }
 
-export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpProps) {
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [birthdate, setBirthdate] = useState('');
+export default function UserInfoEdit({ onComplete }: UserInfoEditProps) {
+  // 초기 데이터 - API에서 받아온 사용자 정보로 설정
+  const [name, setName] = useState('홍길동');
+  const [phone, setPhone] = useState('010-1234-5678');
+  const [birthdate, setBirthdate] = useState('1960-01-01');
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedDay, setSelectedDay] = useState(new Date().getDate());
+  const [selectedYear, setSelectedYear] = useState(1960);
+  const [selectedMonth, setSelectedMonth] = useState(1);
+  const [selectedDay, setSelectedDay] = useState(1);
   const { width } = useWindowDimensions();
   const isTablet = width > 600;
   const MAX_WIDTH = isTablet ? 420 : 360;
@@ -47,9 +48,9 @@ export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpP
   );
 
   const handleSubmit = () => {
-    console.log('회원가입 버튼 클릭');
+    console.log('수정 완료 버튼 클릭');
     console.log({ name, phone, birthdate });
-    onSignUpComplete?.();
+    onComplete?.();
   };
 
   const handleDatePickerPress = () => {
@@ -86,16 +87,13 @@ export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpP
     setSelectedDay(day);
   };
 
-  // 세 가지 항목이 모두 입력되었는지 확인
-  const isFormValid = name.trim() !== '' && birthdate.trim() !== '' && phone.trim() !== '';
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>기본 정보 입력</Text>
+        <Text style={styles.headerTitle}>기본 정보 수정</Text>
       </View>
 
       <ScrollView
@@ -109,7 +107,7 @@ export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpP
             <View style={styles.headingContainer}>
               <Text style={styles.headingText}>성함을 입력해주세요.</Text>
             </View>
-            <View style={styles.textInput}>
+            <View style={styles.textInputFull}>
               <TextInput
                 style={styles.inputText}
                 placeholder="이름 입력"
@@ -161,12 +159,12 @@ export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpP
             </View>
           </View>
 
-          {/* Phone Input Section */}
+          {/* Phone Number Input Section */}
           <View style={styles.inputSection}>
             <View style={styles.headingContainer}>
               <Text style={styles.headingText}>전화번호를 입력해주세요.</Text>
             </View>
-            <View style={styles.textInput}>
+            <View style={styles.textInputFull}>
               <TextInput
                 style={styles.inputText}
                 placeholder="010-0000-0000"
@@ -177,64 +175,41 @@ export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpP
               />
             </View>
           </View>
-
         </View>
       </ScrollView>
 
-      {/* Submit Button - 모든 항목 입력 시 활성화 */}
+      {/* Submit Button - 항상 활성화 */}
       <View style={styles.submitButtonContainer}>
         <TouchableOpacity
-          style={[
-            styles.submitButton,
-            isFormValid ? styles.submitButtonActive : styles.submitButtonDeactive
-          ]}
+          style={[styles.submitButton, styles.submitButtonActive, { maxWidth: MAX_WIDTH }]}
           onPress={handleSubmit}
-          activeOpacity={0.8}
-          disabled={!isFormValid}
         >
-          <Text style={[
-            styles.submitButtonText,
-            isFormValid ? styles.submitButtonTextActive : styles.submitButtonTextDeactive
-          ]}>
-            회원가입
-          </Text>
+          <Text style={styles.submitButtonText}>수정 완료</Text>
         </TouchableOpacity>
       </View>
 
       {/* Date Picker Modal */}
-      <Modal
-        visible={showDatePicker}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={handleCloseDatePicker}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={handleCloseDatePicker}
+      {showDatePicker && (
+        <Modal
+          transparent={true}
+          visible={showDatePicker}
+          animationType="slide"
+          onRequestClose={handleCloseDatePicker}
         >
-          <TouchableOpacity
-            style={styles.datePickerContainer}
-            activeOpacity={1}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <View style={styles.datePickerHeader}>
-              <Text style={styles.datePickerTitle}>생년월일 선택</Text>
-              <TouchableOpacity onPress={handleCloseDatePicker}>
-                <Text style={styles.closeButton}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.datePickerContent}>
-              <View style={styles.pickerRow}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>날짜 선택</Text>
+                <TouchableOpacity onPress={handleCloseDatePicker}>
+                  <Text style={styles.closeButton}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.pickerContainer}>
                 {/* Year Picker */}
                 <View style={styles.pickerColumn}>
                   <Text style={styles.pickerLabel}>년</Text>
-                  <ScrollView
-                    style={styles.pickerScroll}
-                    showsVerticalScrollIndicator={true}
-                    contentContainerStyle={styles.pickerScrollContent}
-                  >
+                  <ScrollView style={styles.picker} showsVerticalScrollIndicator={false}>
                     {years.map((year) => (
                       <TouchableOpacity
                         key={year}
@@ -260,11 +235,7 @@ export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpP
                 {/* Month Picker */}
                 <View style={styles.pickerColumn}>
                   <Text style={styles.pickerLabel}>월</Text>
-                  <ScrollView
-                    style={styles.pickerScroll}
-                    showsVerticalScrollIndicator={true}
-                    contentContainerStyle={styles.pickerScrollContent}
-                  >
+                  <ScrollView style={styles.picker} showsVerticalScrollIndicator={false}>
                     {months.map((month) => (
                       <TouchableOpacity
                         key={month}
@@ -290,11 +261,7 @@ export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpP
                 {/* Day Picker */}
                 <View style={styles.pickerColumn}>
                   <Text style={styles.pickerLabel}>일</Text>
-                  <ScrollView
-                    style={styles.pickerScroll}
-                    showsVerticalScrollIndicator={true}
-                    contentContainerStyle={styles.pickerScrollContent}
-                  >
+                  <ScrollView style={styles.picker} showsVerticalScrollIndicator={false}>
                     {days.map((day) => (
                       <TouchableOpacity
                         key={day}
@@ -318,16 +285,13 @@ export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpP
                 </View>
               </View>
 
-              <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={handleConfirmDate}
-              >
-                <Text style={styles.confirmButtonText}>선택 완료</Text>
+              <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmDate}>
+                <Text style={styles.confirmButtonText}>확인</Text>
               </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal>
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
@@ -335,7 +299,7 @@ export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpP
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#F9FAFB',
   },
   header: {
     width: '100%',
@@ -351,7 +315,6 @@ const styles = StyleSheet.create({
     fontSize: 27,
     color: '#1A1A1A',
     lineHeight: 32.4,
-    textAlign: 'center',
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -379,10 +342,15 @@ const styles = StyleSheet.create({
     lineHeight: 28.8,
     textAlign: 'left',
   },
-  birthdateInputContainer: {
-    flexDirection: 'row' as any,
+  textInputFull: {
+    width: '100%',
+    height: 70,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 14,
+    justifyContent: 'center' as any,
     alignItems: 'center' as any,
-    gap: 12,
   },
   textInput: {
     flex: 1,
@@ -403,6 +371,11 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 16,
   },
+  birthdateInputContainer: {
+    flexDirection: 'row' as any,
+    alignItems: 'center' as any,
+    gap: 12,
+  },
   calendarButton: {
     width: 70,
     height: 70,
@@ -416,105 +389,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center' as any,
-    alignItems: 'center' as any,
-  },
-  datePickerContainer: {
-    width: '92%',
-    maxWidth: 400,
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  datePickerHeader: {
-    flexDirection: 'row' as any,
-    justifyContent: 'space-between' as any,
-    alignItems: 'center' as any,
-    marginBottom: 20,
-  },
-  datePickerTitle: {
-    fontSize: 22,
-    fontWeight: '700' as any,
-    color: '#1e2939',
-    letterSpacing: -0.5,
-  },
-  closeButton: {
-    fontSize: 24,
-    color: '#99a1af',
-    fontWeight: '400' as any,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  datePickerContent: {
-    width: '100%',
-  },
-  pickerRow: {
-    flexDirection: 'row' as any,
-    justifyContent: 'space-between' as any,
-    gap: 8,
-    marginBottom: 20,
-  },
-  pickerColumn: {
-    flex: 1,
-  },
-  pickerLabel: {
-    fontSize: 15,
-    fontWeight: '700' as any,
-    color: '#1e2939',
-    textAlign: 'center' as any,
-    marginBottom: 10,
-  },
-  pickerScroll: {
-    maxHeight: 280,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 14,
-    backgroundColor: '#f9fafb',
-  },
-  pickerScrollContent: {
-    paddingVertical: 4,
-  },
-  pickerItem: {
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  pickerItemSelected: {
-    backgroundColor: '#ffcc02',
-  },
-  pickerItemText: {
-    fontSize: 16,
-    color: '#1e2939',
-    textAlign: 'center' as any,
-    fontWeight: '500' as any,
-  },
-  pickerItemTextSelected: {
-    color: '#545045',
-    fontWeight: '700' as any,
-  },
-  confirmButton: {
-    width: '100%',
-    height: 52,
-    backgroundColor: '#60584d',
-    borderRadius: 14,
-    justifyContent: 'center' as any,
-    alignItems: 'center' as any,
-  },
-  confirmButtonText: {
-    fontSize: 18,
-    fontWeight: '700' as any,
-    color: '#ffffff',
-  },
   submitButtonContainer: {
     position: 'absolute' as any,
     left: 16,
@@ -524,7 +398,6 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     width: '100%',
-    maxWidth: 360,
     height: 66,
     borderRadius: 200,
     justifyContent: 'center' as any,
@@ -533,19 +406,85 @@ const styles = StyleSheet.create({
   submitButtonActive: {
     backgroundColor: '#60584d',
   },
-  submitButtonDeactive: {
-    backgroundColor: '#c4bcb1',
-  },
   submitButtonText: {
-    fontWeight: '700' as any,
     fontSize: 27,
-    lineHeight: 32.4,
+    fontWeight: '700' as any,
+    color: '#FFFFFF',
   },
-  submitButtonTextActive: {
-    color: '#ffffff',
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center' as any,
+    alignItems: 'center' as any,
   },
-  submitButtonTextDeactive: {
-    color: '#ffffff',
+  modalContent: {
+    width: '90%',
+    maxWidth: 400,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row' as any,
+    justifyContent: 'space-between' as any,
+    alignItems: 'center' as any,
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: '700' as any,
+    color: '#1e2939',
+  },
+  closeButton: {
+    fontSize: 28,
+    color: '#6a7282',
+  },
+  pickerContainer: {
+    flexDirection: 'row' as any,
+    justifyContent: 'space-between' as any,
+    marginBottom: 20,
+  },
+  pickerColumn: {
+    flex: 1,
+    alignItems: 'center' as any,
+  },
+  pickerLabel: {
+    fontSize: 16,
+    fontWeight: '600' as any,
+    color: '#1e2939',
+    marginBottom: 10,
+  },
+  picker: {
+    height: 200,
+    width: '100%',
+  },
+  pickerItem: {
+    paddingVertical: 10,
+    alignItems: 'center' as any,
+  },
+  pickerItemSelected: {
+    backgroundColor: '#FFCC02',
+    borderRadius: 8,
+  },
+  pickerItemText: {
+    fontSize: 18,
+    color: '#6a7282',
+  },
+  pickerItemTextSelected: {
+    color: '#1e2939',
+    fontWeight: '700' as any,
+  },
+  confirmButton: {
+    backgroundColor: '#60584d',
+    borderRadius: 200,
+    height: 56,
+    justifyContent: 'center' as any,
+    alignItems: 'center' as any,
+  },
+  confirmButtonText: {
+    fontSize: 20,
+    fontWeight: '700' as any,
+    color: '#FFFFFF',
   },
 });
 

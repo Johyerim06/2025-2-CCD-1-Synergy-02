@@ -1,111 +1,88 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  useWindowDimensions,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../navigation/Router';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'EveningTimeEdit'>;
+const timeOptions = [16, 17, 18, 19, 20, 21];
 
-const timeOptions = [4, 5, 6, 7, 8, 9];
+interface EveningTimeEditScreenProps {
+  onNext?: () => void;
+}
 
-export default function EveningTimeEditScreen() {
-  const navigation = useNavigation<NavigationProp>();
-  const [selectedTime, setSelectedTime] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export default function EveningTimeEditScreen({ onNext }: EveningTimeEditScreenProps) {
+  const { width } = useWindowDimensions();
+  const isTablet = width > 600;
+  const MAX_WIDTH = isTablet ? 420 : 360;
 
+  const [selectedTime, setSelectedTime] = useState<number | null>(18); // 기존 시간으로 초기화
 
-  useEffect(() => {
-    loadEveningTime();
-  }, []);
-
-
-  const loadEveningTime = async () => {
-    try {
-      // TODO: 실제 API 호출로 대체
-
-
-      // 예시 데이터 (6시)
-      setSelectedTime(6);
-    } catch (error) {
-      console.error('저녁 복약 시간 불러오기 실패:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  const isNextButtonActive = selectedTime !== null;
 
   const handleTimeSelect = (hour: number) => {
     setSelectedTime(hour);
   };
 
-
-  const isNextButtonActive = selectedTime !== null;
-
-
   const handleNext = () => {
     if (isNextButtonActive) {
-      // 선택된 저녁 복약 시간을 저장하거나 전달
-      navigation.navigate('BedTimeEdit');
+      console.log('선택된 저녁 약 시간:', selectedTime);
+      onNext?.();
     }
   };
 
-  if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <StatusBar style="dark" />
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>정보를 불러오는 중...</Text>
-        </View>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
-      
+
       {/* 헤더 */}
       <View style={styles.header}>
         <Text style={styles.headerText}>복약 시간 수정</Text>
       </View>
 
-      <View style={styles.content}>
-        {/* 제목 */}
-        <Text style={styles.title}>저녁 약 시간을 선택하세요.</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.pageWrapper, { maxWidth: MAX_WIDTH }]}>
+          {/* 제목 */}
+          <Text style={styles.title}>저녁 약 시간을 선택하세요.</Text>
 
-        {/* 시간 버튼 그리드 */}
-        <View style={styles.timeButtonsContainer}>
-          {timeOptions.map((hour) => {
-            const isSelected = selectedTime === hour;
-            return (
-              <TouchableOpacity
-                key={hour}
-                style={[
-                  styles.timeButton,
-                  isSelected ? styles.timeButtonSelected : styles.timeButtonUnselected,
-                ]}
-                onPress={() => handleTimeSelect(hour)}
-              >
-                <Text
+          {/* 시간 버튼 그리드 */}
+          <View style={styles.timeButtonsContainer}>
+            {timeOptions.map((hour) => {
+              const isSelected = selectedTime === hour;
+              return (
+                <TouchableOpacity
+                  key={hour}
                   style={[
-                    styles.timeButtonText,
-                    isSelected ? styles.timeButtonTextSelected : styles.timeButtonTextUnselected,
+                    styles.timeButton,
+                    isSelected ? styles.timeButtonSelected : styles.timeButtonUnselected,
                   ]}
+                  onPress={() => handleTimeSelect(hour)}
                 >
-                  {hour}시
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+                  <Text
+                    style={[
+                      styles.timeButtonText,
+                      isSelected ? styles.timeButtonTextSelected : styles.timeButtonTextUnselected,
+                    ]}
+                  >
+                    {hour}시
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
+      </ScrollView>
 
-        {/* 다음으로 버튼 */}
+      {/* 다음으로 버튼 */}
+      <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[
             styles.nextButton,
@@ -114,85 +91,86 @@ export default function EveningTimeEditScreen() {
           onPress={handleNext}
           disabled={!isNextButtonActive}
         >
-          <Text style={styles.nextButtonText}>다음으로</Text>
+          <Text
+            style={[
+              styles.nextButtonText,
+              isNextButtonActive ? styles.nextButtonTextActive : styles.nextButtonTextInactive,
+            ]}
+          >
+            다음으로
+          </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#f9fafb',
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontFamily: 'NotoSansKR',
-    fontSize: 16,
-    fontWeight: '400',
-    color: '#6a7282',
-  },
   header: {
-    backgroundColor: '#ffffff',
+    width: '100%',
+    height: 56,
+    justifyContent: 'center' as any,
+    alignItems: 'center' as any,
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#eaeaea',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    marginTop: 24,
+    borderBottomColor: '#EAEAEA',
   },
   headerText: {
-    fontFamily: 'NotoSansKR',
     fontSize: 27,
-    fontWeight: '700',
-    color: '#1a1a1a',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 40,
-  },
-  title: {
-    fontFamily: 'NotoSansKR',
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1e2939',
-    marginBottom: 30,
-    lineHeight: 28.8,
+    fontWeight: '700' as any,
+    color: '#1A1A1A',
+    lineHeight: 32.4,
     textAlign: 'center',
   },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 100,
+    alignItems: 'center' as any,
+    flexGrow: 1,
+  },
+  pageWrapper: {
+    width: '100%',
+    alignSelf: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700' as any,
+    color: '#1e2939',
+    marginBottom: 24,
+    textAlign: 'left',
+  },
   timeButtonsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 40,
-    gap: 16,
+    width: '100%',
+    flexDirection: 'row' as any,
+    flexWrap: 'wrap' as any,
+    justifyContent: 'space-between' as any,
   },
   timeButton: {
-    width: '48%',
-    maxWidth: 148,
-    height: 128,
+    width: 164,
+    height: 144,
     borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ffcc02',
+    justifyContent: 'center' as any,
+    alignItems: 'center' as any,
     marginBottom: 24,
   },
   timeButtonSelected: {
     backgroundColor: '#60584d',
+    borderColor: '#60584d',
   },
   timeButtonUnselected: {
     backgroundColor: '#ffcc02',
+    borderColor: '#ffcc02',
   },
   timeButtonText: {
-    fontFamily: 'NotoSansKR',
     fontSize: 48,
-    fontWeight: '700',
+    fontWeight: '700' as any,
     lineHeight: 57.6,
   },
   timeButtonTextSelected: {
@@ -201,15 +179,20 @@ const styles = StyleSheet.create({
   timeButtonTextUnselected: {
     color: '#545045',
   },
+  buttonContainer: {
+    position: 'absolute' as any,
+    left: 16,
+    right: 16,
+    bottom: 36,
+    alignItems: 'center' as any,
+  },
   nextButton: {
-    width: 320,
+    width: '100%',
+    maxWidth: 360,
     height: 66,
     borderRadius: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
-    marginTop: 'auto',
-    marginBottom: 40,
+    justifyContent: 'center' as any,
+    alignItems: 'center' as any,
   },
   nextButtonActive: {
     backgroundColor: '#60584d',
@@ -218,10 +201,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#c4bcb1',
   },
   nextButtonText: {
-    fontFamily: 'NotoSansKR',
     fontSize: 27,
-    fontWeight: '700',
+    fontWeight: '700' as any,
+    lineHeight: 32.4,
+  },
+  nextButtonTextActive: {
+    color: '#ffffff',
+  },
+  nextButtonTextInactive: {
     color: '#ffffff',
   },
 });
-
