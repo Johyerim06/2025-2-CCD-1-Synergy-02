@@ -180,6 +180,7 @@ export default function App() {
   const [selectedTimePeriods, setSelectedTimePeriods] = useState<TimePeriod[]>([]); // 선택된 복약 시간대
   const [currentTimeEditIndex, setCurrentTimeEditIndex] = useState(0); // 현재 수정 중인 시간대 인덱스
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null); // 선택된 복약 기록 ID
+  const [isEditingFromPrescription, setIsEditingFromPrescription] = useState(false); // 처방전 상세에서 시간 수정 중인지 여부
 
   useEffect(() => {
     async function loadResourcesAndDataAsync() {
@@ -336,7 +337,8 @@ export default function App() {
         medication={medications.find(m => m.id === selectedMedicationId)}
         onGoHome={() => setCurrentScreen('Home')}
         onEditTime={() => {
-          // 시간 수정 시작 - 첫 번째 시간대부터
+          // 시간 수정 시작 - 처방전에서 선택한 시간대만
+          setIsEditingFromPrescription(true);
           setCurrentTimeEditIndex(0);
           if (selectedTimePeriods.length > 0) {
             const firstPeriod = selectedTimePeriods[0];
@@ -386,7 +388,13 @@ export default function App() {
       case 'OnboardingBedTimeSet': return <OnboardingBedTimeSet onComplete={() => setCurrentScreen('Home')} />;
       case 'EditInfoSelect': return <EditInfoSelect 
         onBasicInfo={() => setCurrentScreen('UserInfoEdit')}
-        onMedicationTime={() => setCurrentScreen('MorningTimeEditScreen')}
+        onMedicationTime={() => {
+          // 온보딩처럼 모든 시간대 수정 (아침 → 점심 → 저녁 → 취침)
+          setIsEditingFromPrescription(false);
+          setSelectedTimePeriods(['breakfast', 'lunch', 'dinner', 'bedtime']);
+          setCurrentTimeEditIndex(0);
+          setCurrentScreen('MorningTimeEditScreen');
+        }}
         onExit={() => setCurrentScreen('Home')}
       />;
       case 'UserInfoEdit': return <UserInfoEdit onComplete={() => setCurrentScreen('EditInfoSelect')} />;
@@ -400,8 +408,8 @@ export default function App() {
           else if (nextPeriod === 'dinner') setCurrentScreen('EveningTimeEditScreen');
           else if (nextPeriod === 'bedtime') setCurrentScreen('BedTimeEditScreen');
         } else {
-          // 마지막 시간대면 PrescriptionDetail로 복귀
-          setCurrentScreen('PrescriptionDetailScreen');
+          // 마지막 시간대
+          setCurrentScreen(isEditingFromPrescription ? 'PrescriptionDetailScreen' : 'EditInfoSelect');
         }
       }} />;
       case 'LunchTimeEditScreen': return <LunchTimeEditScreen onNext={() => {
@@ -412,7 +420,7 @@ export default function App() {
           if (nextPeriod === 'dinner') setCurrentScreen('EveningTimeEditScreen');
           else if (nextPeriod === 'bedtime') setCurrentScreen('BedTimeEditScreen');
         } else {
-          setCurrentScreen('PrescriptionDetailScreen');
+          setCurrentScreen(isEditingFromPrescription ? 'PrescriptionDetailScreen' : 'EditInfoSelect');
         }
       }} />;
       case 'EveningTimeEditScreen': return <EveningTimeEditScreen onNext={() => {
@@ -422,12 +430,12 @@ export default function App() {
           const nextPeriod = selectedTimePeriods[nextIndex];
           if (nextPeriod === 'bedtime') setCurrentScreen('BedTimeEditScreen');
         } else {
-          setCurrentScreen('PrescriptionDetailScreen');
+          setCurrentScreen(isEditingFromPrescription ? 'PrescriptionDetailScreen' : 'EditInfoSelect');
         }
       }} />;
       case 'BedTimeEditScreen': return <BedTimeEditScreen onComplete={() => {
-        // 마지막 시간대이므로 PrescriptionDetail로 복귀
-        setCurrentScreen('PrescriptionDetailScreen');
+        // 마지막 시간대 - 어디서 시작했는지에 따라 복귀
+        setCurrentScreen(isEditingFromPrescription ? 'PrescriptionDetailScreen' : 'EditInfoSelect');
       }} />;
       default: return null;
     }
