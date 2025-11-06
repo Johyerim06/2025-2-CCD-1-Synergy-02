@@ -1,0 +1,381 @@
+[1mdiff --git a/FE/App.tsx b/FE/App.tsx[m
+[1mindex b9a5a45..c87e851 100644[m
+[1m--- a/FE/App.tsx[m
+[1m+++ b/FE/App.tsx[m
+[36m@@ -1,37 +1,9 @@[m
+ import React, { useState, useEffect, useCallback } from 'react';[m
+[31m-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';[m
+[32m+[m[32mimport { View } from 'react-native';[m
+ import * as SplashScreenExpo from 'expo-splash-screen';[m
+ import { Asset } from 'expo-asset';[m
+[31m-[m
+[31m-// Import all screens[m
+[31m-import SplashScreen from './src/screens/SplashScreen';[m
+[31m-import { IncomingCallScreen, ActiveCallScreen } from './src/screens';[m
+[31m-import IntakeAlarmQuizScreen from './src/screens/Intake/IntakeAlarmQuizScreen';[m
+[31m-import IntakeRecordListScreen from './src/screens/Intake/IntakeRecordListScreen';[m
+[31m-import IntakeProgressRecordScreen from './src/screens/Intake/IntakeProgressRecordScreen';[m
+[31m-import IntakeRecordDetailsScreen from './src/screens/Intake/IntakeRecordDetailsScreen';[m
+[31m-import IntakeSideEffectCheck from './src/screens/Intake/IntakeSideEffectCheck';[m
+[31m-import PrescriptionCaptureScreen from './src/screens/Prescription/PrescriptionCaptureScreen';[m
+[31m-import PrescriptionProcessingScreen from './src/screens/Prescription/PrescriptionProcessingScreen';[m
+[31m-import PrescriptionIntakeTimeSelectScreen from './src/screens/Prescription/PrescriptionIntakeTimeSelectScreen';[m
+[31m-import PrescriptionAnalysisResultScreen from './src/screens/Prescription/PrescriptionAnalysisResultScreen';[m
+[31m-import PrescriptionDetailScreen from './src/screens/Prescription/PrescriptionDetailScreen';[m
+[31m-import HomeScreen from './src/screens/Home/HomeScreen';[m
+[31m-import HomeScreenEmpty from './src/screens/Home/HomeScreenEmpty';[m
+[31m-import HomeScreenList from './src/screens/Home/HomeScreenList';[m
+[31m-import OnboardingWelcomeScreen from './src/screens/onboarding/OnboardingWelcomeScreen';[m
+[31m-import OnboardingSignUp from './src/screens/onboarding/OnboardingSignUp';[m
+[31m-import OnboardingAlarmGuide from './src/screens/onboarding/OnboardingAlarmGuide';[m
+[31m-import OnboardingMorningTimeSet from './src/screens/onboarding/OnboardingMorningTimeSet';[m
+[31m-import OnboardingLunchTimeSet from './src/screens/onboarding/OnboardingLunchTimeSet';[m
+[31m-import OnboardingEveningTimeSet from './src/screens/onboarding/OnboardingEveningTimeSet';[m
+[31m-import OnboardingBedTimeSet from './src/screens/onboarding/OnboardingBedTimeSet';[m
+[31m-import EditInfoSelect from './src/screens/edit/EditInfoSelect';[m
+[31m-import UserInfoEdit from './src/screens/edit/UserInfoEdit';[m
+[31m-import MorningTimeEditScreen from './src/screens/edit/MorningTimeEditScreen';[m
+[31m-import LunchTimeEditScreen from './src/screens/edit/LunchTimeEditScreen';[m
+[31m-import EveningTimeEditScreen from './src/screens/edit/EveningTimeEditScreen';[m
+[31m-import BedTimeEditScreen from './src/screens/edit/BedTimeEditScreen';[m
+[32m+[m[32mimport Router from './src/navigation/Router';[m
+[32m+[m[32mimport { useAuthStore } from './src/store';[m
+ [m
+ // 스플래시 화면을 자동으로 숨기지 않도록 설정[m
+ SplashScreenExpo.preventAutoHideAsync();[m
+[36m@@ -76,110 +48,9 @@[m [mfunction cacheImages(images: any[]) {[m
+   });[m
+ }[m
+ [m
+[31m-type ScreenName = [m
+[31m-  | 'SplashScreen'[m
+[31m-  | 'Menu'[m
+[31m-  | 'IncomingCallScreen'[m
+[31m-  | 'ActiveCallScreen'[m
+[31m-  | 'IntakeAlarmQuizScreen'[m
+[31m-  | 'IntakeRecordListScreen'[m
+[31m-  | 'IntakeProgressRecordScreen'[m
+[31m-  | 'IntakeRecordDetailsScreen'[m
+[31m-  | 'IntakeSideEffectCheck'[m
+[31m-  | 'PrescriptionCaptureScreen'[m
+[31m-  | 'PrescriptionProcessingScreen'[m
+[31m-  | 'PrescriptionIntakeTimeSelectScreen'[m
+[31m-  | 'PrescriptionAnalysisResultScreen'[m
+[31m-  | 'PrescriptionDetailScreen'[m
+[31m-  | 'Home'[m
+[31m-  | 'HomeScreenEmpty'[m
+[31m-  | 'HomeScreenList'[m
+[31m-  | 'OnboardingWelcomeScreen'[m
+[31m-  | 'OnboardingSignUp'[m
+[31m-  | 'OnboardingAlarmGuide'[m
+[31m-  | 'OnboardingMorningTimeSet'[m
+[31m-  | 'OnboardingLunchTimeSet'[m
+[31m-  | 'OnboardingEveningTimeSet'[m
+[31m-  | 'OnboardingBedTimeSet'[m
+[31m-  | 'EditInfoSelect'[m
+[31m-  | 'UserInfoEdit'[m
+[31m-  | 'MorningTimeEditScreen'[m
+[31m-  | 'LunchTimeEditScreen'[m
+[31m-  | 'EveningTimeEditScreen'[m
+[31m-  | 'BedTimeEditScreen';[m
+[31m-[m
+[31m-// 처방전 데이터 타입[m
+[31m-interface Medication {[m
+[31m-  id: number;[m
+[31m-  category: string;[m
+[31m-  hospital: string;[m
+[31m-  frequency: number;[m
+[31m-  startDate: string;[m
+[31m-}[m
+[31m-[m
+[31m-type TimePeriod = 'breakfast' | 'lunch' | 'dinner' | 'bedtime';[m
+[31m-[m
+[31m-// 복약 기록 데이터[m
+[31m-interface RecordItem {[m
+[31m-  id: string;[m
+[31m-  title: string;[m
+[31m-  dateRange: string;[m
+[31m-}[m
+[31m-[m
+[31m-// 샘플 복약 기록 데이터[m
+[31m-const sampleRecords: RecordItem[] = [[m
+[31m-  {[m
+[31m-    id: '1',[m
+[31m-    title: '가람병원(소화불량)',[m
+[31m-    dateRange: '2025년 10월 14일 - 2025년 10월 25일',[m
+[31m-  },[m
+[31m-  {[m
+[31m-    id: '2',[m
+[31m-    title: '서울병원(두통)',[m
+[31m-    dateRange: '2025년 10월 10일 - 2025년 10월 20일',[m
+[31m-  },[m
+[31m-  {[m
+[31m-    id: '3',[m
+[31m-    title: '강남병원(감기)',[m
+[31m-    dateRange: '2025년 9월 14일 - 2025년 9월 25일',[m
+[31m-  },[m
+[31m-  {[m
+[31m-    id: '4',[m
+[31m-    title: '연세병원(고혈압)',[m
+[31m-    dateRange: '2025년 9월 1일 - 2025년 9월 30일',[m
+[31m-  },[m
+[31m-  {[m
+[31m-    id: '5',[m
+[31m-    title: '삼성병원(당뇨)',[m
+[31m-    dateRange: '2025년 8월 14일 - 2025년 8월 25일',[m
+[31m-  },[m
+[31m-  {[m
+[31m-    id: '6',[m
+[31m-    title: '서울대병원(알레르기)',[m
+[31m-    dateRange: '2025년 8월 1일 - 2025년 8월 10일',[m
+[31m-  },[m
+[31m-  {[m
+[31m-    id: '7',[m
+[31m-    title: '가톨릭병원(복통)',[m
+[31m-    dateRange: '2025년 7월 14일 - 2025년 7월 25일',[m
+[31m-  },[m
+[31m-  {[m
+[31m-    id: '8',[m
+[31m-    title: '세브란스병원(피부질환)',[m
+[31m-    dateRange: '2025년 7월 1일 - 2025년 7월 15일',[m
+[31m-  },[m
+[31m-];[m
+[31m-[m
+ export default function App() {[m
+[31m-  const [currentScreen, setCurrentScreen] = useState<ScreenName>('SplashScreen');[m
+   const [appIsReady, setAppIsReady] = useState(false);[m
+[31m-  const [captureMode, setCaptureMode] = useState<'prescription' | 'envelope'>('prescription');[m
+[31m-  const [medications, setMedications] = useState<Medication[]>([]); // 처방전 데이터[m
+[31m-  const [showRetakeMessage, setShowRetakeMessage] = useState(false); // 재촬영 메시지 표시 여부[m
+[31m-  const [selectedMedicationId, setSelectedMedicationId] = useState<number | null>(null); // 선택된 약 ID[m
+[31m-  const [selectedTimePeriods, setSelectedTimePeriods] = useState<TimePeriod[]>([]); // 선택된 복약 시간대[m
+[31m-  const [currentTimeEditIndex, setCurrentTimeEditIndex] = useState(0); // 현재 수정 중인 시간대 인덱스[m
+[31m-  const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null); // 선택된 복약 기록 ID[m
+[32m+[m[32m  const { initializeAuth } = useAuthStore();[m
+ [m
+   useEffect(() => {[m
+     async function loadResourcesAndDataAsync() {[m
+[36m@@ -200,16 +71,12 @@[m [mexport default function App() {[m
+     loadResourcesAndDataAsync();[m
+   }, []);[m
+ [m
+[31m-  // 스플래시 화면 표시 후 2초 뒤에 OnboardingWelcomeScreen으로 전환[m
+[32m+[m[32m  // 앱 시작 시 인증 상태 확인[m
+   useEffect(() => {[m
+[31m-    if (appIsReady && currentScreen === 'SplashScreen') {[m
+[31m-      const timer = setTimeout(() => {[m
+[31m-        setCurrentScreen('OnboardingWelcomeScreen');[m
+[31m-      }, 2000);[m
+[31m-[m
+[31m-      return () => clearTimeout(timer);[m
+[32m+[m[32m    if (appIsReady) {[m
+[32m+[m[32m      initializeAuth();[m
+     }[m
+[31m-  }, [appIsReady, currentScreen]);[m
+[32m+[m[32m  }, [appIsReady, initializeAuth]);[m
+ [m
+   const onLayoutRootView = useCallback(async () => {[m
+     if (appIsReady) {[m
+[36m@@ -222,324 +89,10 @@[m [mexport default function App() {[m
+     return null; // 로딩 중에는 네이티브 스플래시 화면 표시[m
+   }[m
+ [m
+[31m-  const screens = [[m
+[31m-    { category: 'Splash', items: [[m
+[31m-      { name: 'SplashScreen', label: '🎨 스플래시 화면' },[m
+[31m-    ]},[m
+[31m-    { category: 'Call', items: [[m
+[31m-      { name: 'IncomingCallScreen', label: '📞 전화 수신' },[m
+[31m-      { name: 'ActiveCallScreen', label: '📞 통화 중' },[m
+[31m-    ]},[m
+[31m-    { category: 'Intake', items: [[m
+[31m-      { name: 'IntakeAlarmQuizScreen', label: '💊 복약 퀴즈' },[m
+[31m-      { name: 'IntakeRecordListScreen', label: '📋 복약 기록 목록' },[m
+[31m-      { name: 'IntakeProgressRecordScreen', label: '📊 복약 진행 기록' },[m
+[31m-      { name: 'IntakeRecordDetailsScreen', label: '📋 복약 기록 상세' },[m
+[31m-      { name: 'IntakeSideEffectCheck', label: '⚠️ 부작용 체크' },[m
+[31m-    ]},[m
+[31m-    { category: 'Prescription', items: [[m
+[31m-      { name: 'PrescriptionCaptureScreen', label: '📷 처방전 촬영' },[m
+[31m-      { name: 'PrescriptionProcessingScreen', label: '⏳ 처방전 처리중' },[m
+[31m-      { name: 'PrescriptionIntakeTimeSelectScreen', label: '⏰ 복약 시간 선택' },[m
+[31m-      { name: 'PrescriptionAnalysisResultScreen', label: '📄 처방전 분석 결과' },[m
+[31m-      { name: 'PrescriptionDetailScreen', label: '📄 처방전 상세' },[m
+[31m-    ]},[m
+[31m-    { category: 'Home', items: [[m
+[31m-      { name: 'Home', label: '🏠 홈 (통합)' },[m
+[31m-      { name: 'HomeScreenEmpty', label: '🏠 홈 (비어있음 - 레거시)' },[m
+[31m-      { name: 'HomeScreenList', label: '🏠 홈 (목록 - 레거시)' },[m
+[31m-    ]},[m
+[31m-    { category: 'Onboarding', items: [[m
+[31m-      { name: 'OnboardingWelcomeScreen', label: '👋 온보딩 시작' },[m
+[31m-      { name: 'OnboardingSignUp', label: '✍️ 회원가입' },[m
+[31m-      { name: 'OnboardingAlarmGuide', label: '🔔 알람 가이드' },[m
+[31m-      { name: 'OnboardingMorningTimeSet', label: '🌅 아침 시간 설정' },[m
+[31m-      { name: 'OnboardingLunchTimeSet', label: '☀️ 점심 시간 설정' },[m
+[31m-      { name: 'OnboardingEveningTimeSet', label: '🌆 저녁 시간 설정' },[m
+[31m-      { name: 'OnboardingBedTimeSet', label: '🌙 취침 시간 설정' },[m
+[31m-    ]},[m
+[31m-    { category: 'Edit', items: [[m
+[31m-      { name: 'EditInfoSelect', label: '⚙️ 정보 수정 선택' },[m
+[31m-      { name: 'UserInfoEdit', label: '👤 사용자 정보 수정' },[m
+[31m-      { name: 'MorningTimeEditScreen', label: '🌅 아침 시간 수정' },[m
+[31m-      { name: 'LunchTimeEditScreen', label: '☀️ 점심 시간 수정' },[m
+[31m-      { name: 'EveningTimeEditScreen', label: '🌆 저녁 시간 수정' },[m
+[31m-      { name: 'BedTimeEditScreen', label: '🌙 취침 시간 수정' },[m
+[31m-    ]},[m
+[31m-  ];[m
+[31m-[m
+[31m-  const renderScreen = () => {[m
+[31m-    switch (currentScreen) {[m
+[31m-      case 'SplashScreen': return <SplashScreen />;[m
+[31m-      case 'IncomingCallScreen': return <IncomingCallScreen />;[m
+[31m-      case 'ActiveCallScreen': return <ActiveCallScreen />;[m
+[31m-      case 'IntakeAlarmQuizScreen': return <IntakeAlarmQuizScreen />;[m
+[31m-      case 'IntakeRecordListScreen': return <IntakeRecordListScreen [m
+[31m-        onRecordPress={(recordId) => {[m
+[31m-          console.log('선택된 기록:', recordId);[m
+[31m-          setSelectedRecordId(recordId);[m
+[31m-          setCurrentScreen('IntakeProgressRecordScreen');[m
+[31m-        }}[m
+[31m-        onExit={() => setCurrentScreen('Home')}[m
+[31m-      />;[m
+[31m-      case 'IntakeProgressRecordScreen': return <IntakeProgressRecordScreen [m
+[31m-        recordData={sampleRecords.find(r => r.id === selectedRecordId)}[m
+[31m-        onExit={() => setCurrentScreen('IntakeRecordListScreen')}[m
+[31m-        onDetailRecord={() => setCurrentScreen('IntakeRecordDetailsScreen')}[m
+[31m-      />;[m
+[31m-      case 'IntakeRecordDetailsScreen': return <IntakeRecordDetailsScreen onExit={() => setCurrentScreen('IntakeProgressRecordScreen')} />;[m
+[31m-      case 'IntakeSideEffectCheck': return <IntakeSideEffectCheck />;[m
+[31m-      case 'PrescriptionCaptureScreen': return <PrescriptionCaptureScreen [m
+[31m-        mode={captureMode}[m
+[31m-        showRetakeMessage={showRetakeMessage}[m
+[31m-        onCapture={() => {[m
+[31m-          // 촬영 즉시 Processing 화면으로 이동[m
+[31m-          setShowRetakeMessage(false);[m
+[31m-          setCurrentScreen('PrescriptionProcessingScreen');[m
+[31m-        }}[m
+[31m-      />;[m
+[31m-      case 'PrescriptionProcessingScreen': return <PrescriptionProcessingScreen [m
+[31m-        onSuccess={() => {[m
+[31m-          // OCR 성공 - 약 데이터 추가 후 IntakeTimeSelect로 이동[m
+[31m-          setMedications([[m
+[31m-            {[m
+[31m-              id: 1,[m
+[31m-              category: '감기약',[m
+[31m-              hospital: '가람병원',[m
+[31m-              frequency: 2,[m
+[31m-              startDate: '2025년 10월 5일',[m
+[31m-            },[m
+[31m-            {[m
+[31m-              id: 2,[m
+[31m-              category: '소화제',[m
+[31m-              hospital: '서울병원',[m
+[31m-              frequency: 3,[m
+[31m-              startDate: '2025년 10월 10일',[m
+[31m-            },[m
+[31m-          ]);[m
+[31m-          setCurrentScreen('PrescriptionIntakeTimeSelectScreen');[m
+[31m-        }}[m
+[31m-        onFailure={() => {[m
+[31m-          // OCR 실패 - Capture로 복귀 + 재촬영 메시지[m
+[31m-          setShowRetakeMessage(true);[m
+[31m-          setCurrentScreen('PrescriptionCaptureScreen');[m
+[31m-        }}[m
+[31m-      />;[m
+[31m-      case 'PrescriptionIntakeTimeSelectScreen': return <PrescriptionIntakeTimeSelectScreen [m
+[31m-        onNext={(timePeriods) => {[m
+[31m-          setSelectedTimePeriods(timePeriods);[m
+[31m-          setCurrentScreen('PrescriptionAnalysisResultScreen');[m
+[31m-        }} [m
+[31m-      />;[m
+[31m-      case 'PrescriptionAnalysisResultScreen': return <PrescriptionAnalysisResultScreen onGoHome={() => setCurrentScreen('Home')} />;[m
+[31m-      case 'PrescriptionDetailScreen': return <PrescriptionDetailScreen [m
+[31m-        medication={medications.find(m => m.id === selectedMedicationId)}[m
+[31m-        onGoHome={() => setCurrentScreen('Home')}[m
+[31m-        onEditTime={() => {[m
+[31m-          // 시간 수정 시작 - 첫 번째 시간대부터[m
+[31m-          setCurrentTimeEditIndex(0);[m
+[31m-          if (selectedTimePeriods.length > 0) {[m
+[31m-            const firstPeriod = selectedTimePeriods[0];[m
+[31m-            if (firstPeriod === 'breakfast') setCurrentScreen('MorningTimeEditScreen');[m
+[31m-            else if (firstPeriod === 'lunch') setCurrentScreen('LunchTimeEditScreen');[m
+[31m-            else if (firstPeriod === 'dinner') setCurrentScreen('EveningTimeEditScreen');[m
+[31m-            else if (firstPeriod === 'bedtime') setCurrentScreen('BedTimeEditScreen');[m
+[31m-          }[m
+[31m-        }}[m
+[31m-      />;[m
+[31m-      case 'Home': return <HomeScreen [m
+[31m-        medications={medications}[m
+[31m-        onPrescriptionRegister={() => {[m
+[31m-          setCaptureMode('prescription');[m
+[31m-          setCurrentScreen('PrescriptionCaptureScreen');[m
+[31m-        }} [m
+[31m-        onPillEnvelopeRegister={() => {[m
+[31m-          setCaptureMode('envelope');[m
+[31m-          setCurrentScreen('PrescriptionCaptureScreen');[m
+[31m-        }}[m
+[31m-        onEditInfo={() => setCurrentScreen('EditInfoSelect')}[m
+[31m-        onMedicationRecord={() => setCurrentScreen('IntakeRecordListScreen')}[m
+[31m-        onMedicationPress={(id) => {[m
+[31m-          console.log('약 상세:', id);[m
+[31m-          setSelectedMedicationId(id);[m
+[31m-          setCurrentScreen('PrescriptionDetailScreen');[m
+[31m-        }}[m
+[31m-      />;[m
+[31m-      case 'HomeScreenEmpty': return <HomeScreenEmpty [m
+[31m-        onPrescriptionRegister={() => {[m
+[31m-          setCaptureMode('prescription');[m
+[31m-          setCurrentScreen('PrescriptionCaptureScreen');[m
+[31m-        }} [m
+[31m-        onPillEnvelopeRegister={() => {[m
+[31m-          setCaptureMode('envelope');[m
+[31m-          setCurrentScreen('PrescriptionCaptureScreen');[m
+[31m-        }}[m
+[31m-        onEditInfo={() => setCurrentScreen('EditInfoSelect')}[m
+[31m-      />;[m
+[31m-      case 'HomeScreenList': return <HomeScreenList />;[m
+[31m-      case 'OnboardingWelcomeScreen': return <OnboardingWelcomeScreen onStartPress={() => setCurrentScreen('OnboardingSignUp')} />;[m
+[31m-      case 'OnboardingSignUp': return <OnboardingSignUp onSignUpComplete={() => setCurrentScreen('OnboardingAlarmGuide')} />;[m
+[31m-      case 'OnboardingAlarmGuide': return <OnboardingAlarmGuide onComplete={() => setCurrentScreen('OnboardingMorningTimeSet')} />;[m
+[31m-      case 'OnboardingMorningTimeSet': return <OnboardingMorningTimeSet onNext={() => setCurrentScreen('OnboardingLunchTimeSet')} />;[m
+[31m-      case 'OnboardingLunchTimeSet': return <OnboardingLunchTimeSet onNext={() => setCurrentScreen('OnboardingEveningTimeSet')} />;[m
+[31m-      case 'OnboardingEveningTimeSet': return <OnboardingEveningTimeSet onNext={() => setCurrentScreen('OnboardingBedTimeSet')} />;[m
+[31m-      case 'OnboardingBedTimeSet': return <OnboardingBedTimeSet onComplete={() => setCurrentScreen('Home')} />;[m
+[31m-      case 'EditInfoSelect': return <EditInfoSelect [m
+[31m-        onBasicInfo={() => setCurrentScreen('UserInfoEdit')}[m
+[31m-        onMedicationTime={() => setCurrentScreen('MorningTimeEditScreen')}[m
+[31m-        onExit={() => setCurrentScreen('Home')}[m
+[31m-      />;[m
+[31m-      case 'UserInfoEdit': return <UserInfoEdit onComplete={() => setCurrentScreen('EditInfoSelect')} />;[m
+[31m-      case 'MorningTimeEditScreen': return <MorningTimeEditScreen onNext={() => {[m
+[31m-        // 다음 시간대로 이동[m
+[31m-        const nextIndex = currentTimeEditIndex + 1;[m
+[31m-        if (nextIndex < selectedTimePeriods.length) {[m
+[31m-          setCurrentTimeEditIndex(nextIndex);[m
+[31m-          const nextPeriod = selectedTimePeriods[nextIndex];[m
+[31m-          if (nextPeriod === 'lunch') setCurrentScreen('LunchTimeEditScreen');[m
+[31m-          else if (nextPeriod === 'dinner') setCurrentScreen('EveningTimeEditScreen');[m
+[31m-          else if (nextPeriod === 'bedtime') setCurrentScreen('BedTimeEditScreen');[m
+[31m-        } else {[m
+[31m-          // 마지막 시간대면 PrescriptionDetail로 복귀[m
+[31m-          setCurrentScreen('PrescriptionDetailScreen');[m
+[31m-        }[m
+[31m-      }} />;[m
+[31m-      case 'LunchTimeEditScreen': return <LunchTimeEditScreen onNext={() => {[m
+[31m-        const nextIndex = currentTimeEditIndex + 1;[m
+[31m-        if (nextIndex < selectedTimePeriods.length) {[m
+[31m-          setCurrentTimeEditIndex(nextIndex);[m
+[31m-          const nextPeriod = selectedTimePeriods[nextIndex];[m
+[31m-          if (nextPeriod === 'dinner') setCurrentScreen('EveningTimeEditScreen');[m
+[31m-          else if (nextPeriod === 'bedtime') setCurrentScreen('BedTimeEditScreen');[m
+[31m-        } else {[m
+[31m-          setCurrentScreen('PrescriptionDetailScreen');[m
+[31m-        }[m
+[31m-      }} />;[m
+[31m-      case 'EveningTimeEditScreen': return <EveningTimeEditScreen onNext={() => {[m
+[31m-        const nextIndex = currentTimeEditIndex + 1;[m
+[31m-        if (nextIndex < selectedTimePeriods.length) {[m
+[31m-          setCurrentTimeEditIndex(nextIndex);[m
+[31m-          const nextPeriod = selectedTimePeriods[nextIndex];[m
+[31m-

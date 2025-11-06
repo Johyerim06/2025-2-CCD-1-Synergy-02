@@ -16,17 +16,33 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.bokjaapp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/main_icon/icon.png",
         "backgroundColor": "#FFCC02"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "USE_FULL_SCREEN_INTENT",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "WAKE_LOCK"
+      ]
     },
     "web": {
       "favicon": "./assets/images/main_icon/icon.png"
     },
     "plugins": [
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/main_icon/icon.png",
+          "color": "#FFCC02",
+          "sounds": [],
+          "mode": "production"
+        }
+      ]
     ]
   }
 }
