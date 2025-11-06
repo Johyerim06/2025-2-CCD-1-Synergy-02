@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import * as SplashScreenExpo from 'expo-splash-screen';
 import { Asset } from 'expo-asset';
+import * as Notifications from 'expo-notifications';
+import { setupNotificationListeners, createNotificationChannel } from './src/services/notificationService';
 
 // Import all screens
 import SplashScreen from './src/screens/SplashScreen';
@@ -189,6 +191,9 @@ export default function App() {
         const imageAssetPromises = cacheImages(imageAssets);
         await Promise.all([...imageAssetPromises]);
         
+        // 알림 채널 설정 (Android)
+        await createNotificationChannel();
+        
         console.log('All assets loaded successfully');
       } catch (e) {
         console.warn('Error loading assets:', e);
@@ -199,6 +204,33 @@ export default function App() {
     }
 
     loadResourcesAndDataAsync();
+  }, []);
+
+  // 알림 수신 리스너 설정
+  useEffect(() => {
+    const cleanup = setupNotificationListeners(
+      // 포그라운드에서 알림 받을 때
+      (notification) => {
+        console.log('알림 수신:', notification);
+        // 알림 데이터에서 이벤트 타입 확인
+        const data = notification.request.content.data;
+        if (data?.type === 'incoming_call' || data?.type === 'event') {
+          // IncomingCallScreen으로 이동
+          setCurrentScreen('IncomingCallScreen');
+        }
+      },
+      // 알림 클릭 시 (백그라운드/포그라운드 모두)
+      (response) => {
+        console.log('알림 클릭:', response);
+        const data = response.notification.request.content.data;
+        if (data?.type === 'incoming_call' || data?.type === 'event') {
+          // IncomingCallScreen으로 이동
+          setCurrentScreen('IncomingCallScreen');
+        }
+      }
+    );
+
+    return cleanup;
   }, []);
 
   // 스플래시 화면 표시 후 2초 뒤에 OnboardingWelcomeScreen으로 전환

@@ -51,7 +51,7 @@ export default function PrescriptionAnalysisResultScreen({ onGoHome }: Prescript
   const MAX_WIDTH = isTablet ? 420 : 360;
 
   // TODO: navigation과 route params는 나중에 연결
-  const source = 'prescription'; // 기본값
+  const source = 'prescription' as 'prescription' | 'medicationEnvelope'; // 기본값
   const headerText = source === 'medicationEnvelope' ? '약봉투 분석 완료' : '처방전 분석 완료';
   
 
