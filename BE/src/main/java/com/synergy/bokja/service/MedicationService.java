@@ -16,6 +16,8 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.time.LocalDateTime.now;
+
 @Service
 @RequiredArgsConstructor
 public class MedicationService {
@@ -63,7 +65,7 @@ public class MedicationService {
         um.setHospital(ext.hospital());
         um.setCategory(initialCategory);   // NOT NULL 방지
         um.setTaken(0);
-        um.setCreated_at(now);             // created_at 세팅
+        um.setCreatedAt(now());             // created_at 세팅
 
         userMedicineRepository.save(um);   // umno 발급
 
@@ -184,7 +186,7 @@ public class MedicationService {
         alarm.getUserMedicine().setUmno(umno);
         alarm.getEventName().setEnno(ENNO_ALARM);
         alarm.setDescription("복약알림예시스크립트입니다.");
-        alarm.setCreated_at(now.toLocalDateTime());
+        alarm.setCreatedAt(now.toLocalDateTime());
         descriptionRepository.save(alarm);
 
         // --- call ---
@@ -192,7 +194,7 @@ public class MedicationService {
         call.getUserMedicine().setUmno(umno);
         call.getEventName().setEnno(ENNO_CALL);
         call.setDescription("AI전화알림예시스크립트입니다.");
-        call.setCreated_at(now.toLocalDateTime());
+        call.setCreatedAt(now.toLocalDateTime());
         descriptionRepository.save(call);
 
         // 퀴즈 생성 로직은 그대로

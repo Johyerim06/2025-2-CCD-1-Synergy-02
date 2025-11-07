@@ -3,6 +3,7 @@
 .gradle/
 !gradle/wrapper/gradle-wrapper.jar
 bin/
+/uploads/
 
 # IntelliJ (Old)
 out/

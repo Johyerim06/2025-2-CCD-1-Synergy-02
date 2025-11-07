@@ -16,4 +16,14 @@ public interface CombinationRepository extends JpaRepository<CombinationEntity, 
     List<CombinationEntity> findRelatedCombinations(@Param("medName") String medName);
 
     List<CombinationEntity> findAllByIngredientIsNotNull();
+
+    @Query("SELECT c FROM CombinationEntity c " +
+            "WHERE c.name IN :names " +
+            "OR c.ingredient IN :ingredients " +
+            "OR c.classification IN :classifications")
+    List<CombinationEntity> findCombinationsIn(
+            @Param("names") List<String> names,
+            @Param("ingredients") List<String> ingredients,
+            @Param("classifications") List<String> classifications
+    );
 }
