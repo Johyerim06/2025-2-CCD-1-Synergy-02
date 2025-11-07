@@ -24,6 +24,9 @@ public class MedicineEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String image;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String ingredient;
+
     @Column(columnDefinition = "TEXT")
     private String information;
 }

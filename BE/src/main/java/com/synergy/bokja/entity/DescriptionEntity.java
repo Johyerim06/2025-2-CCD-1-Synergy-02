@@ -26,11 +26,11 @@ public class DescriptionEntity {
     @JoinColumn(name = "umno")
     private UserMedicineEntity userMedicine;
 
-    @Column(nullable = false)
-    private LocalDateTime created_at;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
-    @Column
-    private LocalDateTime updated_at;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "enno")

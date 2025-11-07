@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Getter @Setter
 @NoArgsConstructor
@@ -24,8 +25,8 @@ public class UserMedicineEntity {
     @Column(nullable = false, length = 20)
     private String category;
 
-    @Column(nullable = false)
-    private Timestamp created_at;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     @Column(nullable = false, length = 40)
     private String hospital;
