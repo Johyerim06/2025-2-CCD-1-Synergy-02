@@ -2,7 +2,7 @@
 import { create } from 'zustand';
 import { tokenStorage } from '../api/tokenStorage';
 import { api, handleApiError } from '../api/api';
-import { getFCMToken } from '../services/notificationService';
+import { getFCMToken as getFCMTokenFromService } from '../services/notificationService';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -28,7 +28,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // FCM 토큰 받아오기
   getFCMToken: async () => {
     try {
-      const fcmToken = await getFCMToken();
+      const fcmToken = await getFCMTokenFromService();
       set({ fcmToken });
       return fcmToken;
     } catch (error) {

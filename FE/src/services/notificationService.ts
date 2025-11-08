@@ -25,20 +25,33 @@ export async function getFCMToken(): Promise<string | null> {
       // 권한이 없으면 요청
       const { status: newStatus } = await Notifications.requestPermissionsAsync();
       if (newStatus !== 'granted') {
-        console.warn('알림 권한이 허용되지 않았습니다.');
+        console.warn('알림 권한이 거부되었습니다.');
         return null;
       }
     }
+
+    // Expo Push Token 받아오기
+    // projectId를 생략하면 자동으로 감지됩니다
+    const tokenData = await Notifications.getExpoPushTokenAsync();
     
-    // FCM 토큰 받아오기
-    const token = await Notifications.getExpoPushTokenAsync({
-      projectId: 'your-project-id', // TODO: Expo 프로젝트 ID로 변경
-    });
-    
-    return token.data;
+    return tokenData.data;
   } catch (error) {
     console.error('FCM 토큰 받아오기 실패:', error);
     return null;
+  }
+}
+
+/**
+ * 알림 채널 생성 (Android)
+ */
+export async function createNotificationChannel(): Promise<void> {
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: '기본 알림',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FFCC02',
+    });
   }
 }
 
@@ -52,19 +65,17 @@ export function setupNotificationListeners(
   // 포그라운드에서 알림 받을 때
   const receivedSubscription = Notifications.addNotificationReceivedListener(
     (notification) => {
-      console.log('알림 수신:', notification);
       onNotificationReceived?.(notification);
     }
   );
-  
+
   // 알림 클릭 시 (백그라운드/포그라운드 모두)
   const responseSubscription = Notifications.addNotificationResponseReceivedListener(
     (response) => {
-      console.log('알림 클릭:', response);
       onNotificationResponse?.(response);
     }
   );
-  
+
   // 정리 함수 반환
   return () => {
     receivedSubscription.remove();
@@ -78,64 +89,21 @@ export function setupNotificationListeners(
 export async function scheduleLocalNotification(
   title: string,
   body: string,
-  trigger: Notifications.NotificationTriggerInput
-) {
-  try {
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title,
-        body,
-        sound: true,
-        priority: Notifications.AndroidNotificationPriority.HIGH,
-      },
-      trigger,
-    });
-  } catch (error) {
-    console.error('로컬 알림 스케줄링 실패:', error);
-  }
-}
+  data: { [key: string]: any },
+  seconds: number = 1
+): Promise<string> {
+  const identifier = await Notifications.scheduleNotificationAsync({
+    content: {
+      title,
+      body,
+      data,
+      sound: true,
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds,
+    },
+  });
 
-/**
- * 모든 알림 취소
- */
-export async function cancelAllNotifications() {
-  await Notifications.cancelAllScheduledNotificationsAsync();
+  return identifier;
 }
-
-/**
- * 알림 배지 수 설정
- */
-export async function setBadgeCount(count: number) {
-  await Notifications.setBadgeCountAsync(count);
-}
-
-/**
- * 알림 채널 설정 (Android)
- */
-export async function createNotificationChannel() {
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: '기본 알림',
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FFCC02',
-      sound: 'default',
-      showBadge: true,
-      enableVibrate: true,
-      enableLights: true,
-    });
-    
-    // Full Screen Intent를 위한 채널 (Android 11+)
-    await Notifications.setNotificationChannelAsync('incoming-call', {
-      name: '전화 수신',
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FFCC02',
-      sound: 'default',
-      showBadge: true,
-      enableVibrate: true,
-      enableLights: true,
-    });
-  }
-}
-

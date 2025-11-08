@@ -15,7 +15,7 @@ interface OnboardingMorningTimeSetProps {
 }
 
 export default function OnboardingMorningTimeSet({ onNext }: OnboardingMorningTimeSetProps) {
-  const [selectedTime, setSelectedTime] = useState<string | null>('6시'); // Figma 디자인에서 6시가 선택된 상태
+  const [selectedTime, setSelectedTime] = useState<string | null>(null); // 사용자가 선택해야 함
   const { width } = useWindowDimensions();
   const isTablet = width > 600;
   const MAX_WIDTH = isTablet ? 420 : 360;
@@ -141,10 +141,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row' as any,
     flexWrap: 'wrap' as any,
     justifyContent: 'space-between' as any,
+    gap: 0,
   },
   timeButton: {
-    width: 148,
-    height: 128,
+    width: '48%',
+    maxWidth: 148,
+    aspectRatio: 148 / 128,
+    minHeight: 128,
     borderRadius: 25,
     justifyContent: 'center' as any,
     alignItems: 'center' as any,
