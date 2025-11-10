@@ -174,7 +174,7 @@ export default function PrescriptionDetailScreen({ medication, onGoHome, onEditT
                     <View style={styles.warningSection}>
                       <View style={styles.warningHeader}>
                         <Image
-                          source={require('../../../assets/images/PrescriptionAnalysisResultScreen/병용섭취주의.png')}
+                          source={require('../../../assets/images/caution.png')}
                           style={styles.warningIcon}
                         />
                         <Text style={styles.warningTitle}>{medicine.warning.title}</Text>

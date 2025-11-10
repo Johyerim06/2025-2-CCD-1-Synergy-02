@@ -66,10 +66,10 @@ export const IncomingCallScreen = React.memo(({
       
       {/* 하단 고정 버튼 */}
       <View style={styles.callActionContainer}>
-        {/* Accept Button (Frame 53) - 80x80, #319e55 - 왼쪽 */}
+        {/* Accept Button (초록색) - 왼쪽 */}
         <CallButton type="accept" onPress={handleAccept} />
         
-        {/* Decline Button (Frame 54) - 80x80, #fb0c0c - 오른쪽 */}
+        {/* Decline Button (빨간색) - 오른쪽 */}
         <CallButton type="decline" onPress={handleDecline} />
       </View>
     </SafeAreaView>

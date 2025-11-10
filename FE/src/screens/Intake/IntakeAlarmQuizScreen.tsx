@@ -12,11 +12,17 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 
-const IntakeAlarmQuizScreen = React.memo(() => {
+interface IntakeAlarmQuizScreenProps {
+  onMedicationTaken?: () => void;
+  onThreeTimesWrong?: () => void;
+  initialWrongCount?: number; // 전화에서 돌아왔을 때 3번 틀린 상태 유지
+}
+
+const IntakeAlarmQuizScreen = React.memo(({ onMedicationTaken, onThreeTimesWrong, initialWrongCount = 0 }: IntakeAlarmQuizScreenProps) => {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [isWrong, setIsWrong] = useState(false);
+  const [isWrong, setIsWrong] = useState(initialWrongCount >= 3);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [wrongCount, setWrongCount] = useState(0);
+  const [wrongCount, setWrongCount] = useState(initialWrongCount);
   const [isInteractionComplete, setIsInteractionComplete] = useState(false);
   const { width } = useWindowDimensions();
   const isTablet = width > 600;
@@ -58,21 +64,23 @@ const IntakeAlarmQuizScreen = React.memo(() => {
           setIsWrong(false);
           setSelectedAnswer(null); // 선택 초기화
         }, 3000);
+      } else {
+        // 3번 연속 오답인 경우 바로 전화 화면으로 이동
+        onThreeTimesWrong?.();
       }
-      // 3번 연속 오답인 경우는 그대로 유지 (버튼 활성화)
     } else {
       // 정답인 경우
       setIsWrong(false);
       setIsCorrect(true);
     }
-  }, [wrongCount]);
+  }, [wrongCount, onThreeTimesWrong]);
 
   const handleSubmit = useCallback(() => {
     console.log('약 먹었어요 버튼 클릭');
     console.log('선택된 답변:', selectedAnswer);
     console.log('오답 여부:', isWrong);
-    // TODO: 네비게이션 연결
-  }, [selectedAnswer, isWrong]);
+    onMedicationTaken?.();
+  }, [selectedAnswer, isWrong, onMedicationTaken]);
 
   const isButtonActive = isCorrect || wrongCount >= 3;
 

@@ -10,9 +10,10 @@ import { StatusBar } from 'expo-status-bar';
 interface PrescriptionProcessingScreenProps {
   onSuccess?: () => void; // OCR 성공 시
   onFailure?: () => void; // OCR 실패 시
+  mode?: 'prescription' | 'envelope'; // 촬영 모드
 }
 
-export default function PrescriptionProcessingScreen({ onSuccess, onFailure }: PrescriptionProcessingScreenProps) {
+export default function PrescriptionProcessingScreen({ onSuccess, onFailure, mode = 'prescription' }: PrescriptionProcessingScreenProps) {
   useEffect(() => {
     // OCR API 호출 시뮬레이션
     const processOCR = async () => {
@@ -59,7 +60,9 @@ export default function PrescriptionProcessingScreen({ onSuccess, onFailure }: P
         />
         
         {/* 로딩 텍스트 */}
-        <Text style={styles.loadingText}>처방전을 분석 중입니다</Text>
+        <Text style={styles.loadingText}>
+          {mode === 'envelope' ? '약봉투를 분석 중입니다' : '처방전을 분석 중입니다'}
+        </Text>
       </View>
     </View>
   );

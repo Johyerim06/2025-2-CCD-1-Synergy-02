@@ -42,6 +42,7 @@ SplashScreenExpo.preventAutoHideAsync();
 const imageAssets = [
   require('./assets/SplashScreen.png'),
   require('./assets/images/BedTimeIcon.png'),
+  require('./assets/images/caution.png'),
   require('./assets/images/ConstipationUrinationDifficulty.png'),
   require('./assets/images/Dizziness.png'),
   require('./assets/images/DrowsinessSedation.png'),
@@ -303,9 +304,30 @@ export default function App() {
   const renderScreen = () => {
     switch (currentScreen) {
       case 'SplashScreen': return <SplashScreen />;
-      case 'IncomingCallScreen': return <IncomingCallScreen />;
+      case 'IncomingCallScreen': return <IncomingCallScreen 
+        onAccept={() => {
+          // 초록 버튼 클릭 → ActiveCallScreen으로 이동
+          setCurrentScreen('ActiveCallScreen');
+        }}
+        onDecline={() => {
+          // 빨간 버튼 클릭 → IntakeAlarmQuizScreen(3번 틀린 상태)로 돌아가기
+          setCurrentScreen('IntakeAlarmQuizScreen');
+        }}
+      />;
       case 'ActiveCallScreen': return <ActiveCallScreen />;
-      case 'IntakeAlarmQuizScreen': return <IntakeAlarmQuizScreen />;
+      case 'IntakeAlarmQuizScreen': return <IntakeAlarmQuizScreen 
+        onMedicationTaken={() => {
+          // 약 먹었어요 → 오답 횟수 초기화 후 부작용 체크로 이동
+          setQuizWrongCount(0);
+          setCurrentScreen('IntakeSideEffectCheck');
+        }}
+        onThreeTimesWrong={() => {
+          // 3번 오답 → 오답 횟수 저장 후 IncomingCallScreen으로 이동
+          setQuizWrongCount(3);
+          setCurrentScreen('IncomingCallScreen');
+        }}
+        initialWrongCount={quizWrongCount}
+      />;
       case 'IntakeRecordListScreen': return <IntakeRecordListScreen 
         onRecordPress={(recordId) => {
           console.log('선택된 기록:', recordId);
@@ -320,7 +342,9 @@ export default function App() {
         onDetailRecord={() => setCurrentScreen('IntakeRecordDetailsScreen')}
       />;
       case 'IntakeRecordDetailsScreen': return <IntakeRecordDetailsScreen onExit={() => setCurrentScreen('IntakeProgressRecordScreen')} />;
-      case 'IntakeSideEffectCheck': return <IntakeSideEffectCheck />;
+      case 'IntakeSideEffectCheck': return <IntakeSideEffectCheck 
+        onComplete={() => setCurrentScreen('Home')}
+      />;
       case 'PrescriptionCaptureScreen': return <PrescriptionCaptureScreen 
         mode={captureMode}
         showRetakeMessage={showRetakeMessage}
@@ -331,6 +355,7 @@ export default function App() {
         }}
       />;
       case 'PrescriptionProcessingScreen': return <PrescriptionProcessingScreen 
+        mode={captureMode}
         onSuccess={() => {
           // OCR 성공 - 약 데이터 추가 후 IntakeTimeSelect로 이동
           setMedications([

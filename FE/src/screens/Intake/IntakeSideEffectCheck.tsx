@@ -17,6 +17,10 @@ interface SideEffect {
   icon: any;
 }
 
+interface IntakeSideEffectCheckProps {
+  onComplete?: () => void;
+}
+
 const sideEffects: SideEffect[] = [
   { id: 'indigestion', name: '소화불량, 속쓰림', icon: require('../../../assets/images/IndigestionHeartburn.png') },
   { id: 'constipation', name: '변비, 소변불편', icon: require('../../../assets/images/ConstipationUrinationDifficulty.png') },
@@ -28,7 +32,7 @@ const sideEffects: SideEffect[] = [
   { id: 'none', name: '부작용\n없음', icon: null },
 ];
 
-export default function IntakeSideEffectCheck() {
+export default function IntakeSideEffectCheck({ onComplete }: IntakeSideEffectCheckProps) {
   const { width } = useWindowDimensions();
   const isTablet = width > 600;
   const MAX_WIDTH = isTablet ? 420 : 360;
@@ -60,7 +64,7 @@ export default function IntakeSideEffectCheck() {
   const handleNext = () => {
     if (isNextButtonActive) {
       console.log('선택된 부작용:', selectedEffects);
-      // TODO: 네비게이션 연결
+      onComplete?.();
     }
   };
 

@@ -157,6 +157,11 @@ const IntakeProgressRecordScreen = React.memo(({ recordData, onExit, onDetailRec
               disableArrowLeft={false}
               disableArrowRight={false}
               enableSwipeMonths={true}
+              renderArrow={(direction) => (
+                <Text style={styles.arrowText}>
+                  {direction === 'left' ? '←' : '→'}
+                </Text>
+              )}
               theme={{
                 backgroundColor: '#EAEAEA',
                 calendarBackground: '#EAEAEA',
@@ -341,6 +346,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#EAEAEA',
     borderRadius: 18,
     paddingVertical: 10,
+  },
+  arrowText: {
+    fontSize: 24,
+    fontWeight: '700' as '700',
+    color: '#000000',
+    paddingHorizontal: 10,
   },
   exitButtonContainer: {
     position: 'absolute',
