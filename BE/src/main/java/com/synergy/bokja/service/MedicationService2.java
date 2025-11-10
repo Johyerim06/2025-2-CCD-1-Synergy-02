@@ -434,26 +434,35 @@ public class MedicationService2 {
      * [8단계] 최종 복약 안내 문구 생성 (LLM)
      */
     private String createFinalDescription(MedicineEntity med, List<CombinationEntity> allCombinations) throws IOException, InterruptedException {
-        // 1. (동일) 주의사항 리스트 준비
-        List<String> warnings = allCombinations.stream()
+
+        // 1. 약품과 관련된 주의사항 '객체'를 필터링 (NPE 방지 코드 포함)
+        List<CombinationEntity> relevantCombinations = allCombinations.stream()
                 .filter(c ->
                         (c.getName() != null && c.getName().equals(med.getName())) ||
                                 (c.getClassification() != null && c.getClassification().equals(med.getClassification())) ||
                                 (c.getIngredient() != null && med.getIngredient() != null && med.getIngredient().contains(c.getIngredient()))
                 )
-                .map(CombinationEntity::getInformation)
-                .distinct()
                 .collect(Collectors.toList());
 
-        // 2. (수정) Python 스크립트 호출 (인자 4개 전달)
-        String llmResult = runPythonScript(llmScriptPath,
-                "description", // sys.argv[1] (mode)
-                med.getInformation(), // sys.argv[2]
-                med.getDescription(), // sys.argv[3]
-                objectMapper.writeValueAsString(warnings) // sys.argv[4]
+        // 2. LLM에 보낼 '형식화된 주의사항' 리스트 생성
+        List<String> formattedWarnings = relevantCombinations.stream().map(combo -> {
+            // mtno가 연결된 경우
+            if (combo.getMaterial() != null && combo.getMaterial().getName() != null) {
+                // LLM에 "프로바이오틱스"와 "주의 문구"를 세트로 묶어서 전달
+                return String.format("'%s' 관련 주의: %s", combo.getMaterial().getName(), combo.getInformation());
+            } else {
+                // '알코올'처럼 mtno가 없는 경우 (ingredient 기반)
+                return String.format("'%s' 관련 주의: %s", combo.getIngredient(), combo.getInformation());
+            }
+        }).distinct().collect(Collectors.toList());
+
+        // 3. (중요) Python 스크립트에 '인자(argument)' 4개 전달
+        String llmResult = runPythonScript(llmScriptPath, "description",
+                med.getInformation(),
+                med.getDescription(),
+                objectMapper.writeValueAsString(formattedWarnings) // ["'프로바이오틱스' 관련 주의: ..."]
         );
 
-        // 3. (수정) LLM 결과(JSON 문자열) 파싱
         return objectMapper.readValue(llmResult, String.class);
     }
 
@@ -481,15 +490,17 @@ public class MedicationService2 {
     private void generateCombinationQuiz(UserMedicineEntity prescription, String category, List<CombinationEntity> combinations) {
 
         // 1. 정답 후보 (주의 원료) 추출
-        // (combination_table의 ingredient 컬럼이 '주의 원료'라고 가정)
         List<String> correctAnswers = combinations.stream()
-                .map(CombinationEntity::getIngredient)
-                .filter(Objects::nonNull) // null이 아닌 것만
-                .distinct() // 중복 제거
+                .map(CombinationEntity::getMaterial) // mtno에 연결된 MaterialEntity
+                .filter(Objects::nonNull) // material이 null이 아닌 것만
+                .map(MaterialEntity::getName) // ex."프로바이오틱스"
+                .filter(Objects::nonNull)
+                .distinct()
                 .collect(Collectors.toList());
 
-        // 2. 님의 조건: "정답이 없을 수도 있ㄱ든 그러면 그냥 생성하지 말고"
+        // 2. 정답이 없으면 생성하지 않음
         if (correctAnswers.isEmpty()) {
+            System.out.println("병용섭취 퀴즈: 정답 후보(mtno)가 없으므로 퀴즈 생성을 건너뜁니다.");
             return; // 퀴즈 생성을 중단
         }
 
@@ -525,7 +536,7 @@ public class MedicationService2 {
         QuizEntity quiz = QuizEntity.builder()
                 .userMedicine(prescription) // umno FK
                 .type("약효분류")
-                .question(String.format("%s에 포함되어있지 않은 효능은?", category))
+                .question(String.format("%s에 포함되어 있는 효능은?", category))
                 .build();
         QuizEntity savedQuiz = quizRepository.save(quiz);
 
