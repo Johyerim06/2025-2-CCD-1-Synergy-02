@@ -8,8 +8,8 @@ import {
   ScrollView,
   useWindowDimensions,
   Modal,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { scale } from '../../utils/scale';
@@ -29,6 +29,7 @@ export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpP
   const { width } = useWindowDimensions();
   const isTablet = width > 600;
   const MAX_WIDTH = scale(isTablet ? 420 : 360);
+  const insets = useSafeAreaInsets();
 
   // 연도 목록 생성 (현재 년도부터 100년 전까지)
   const currentYear = new Date().getFullYear();
@@ -91,16 +92,18 @@ export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpP
   const isFormValid = name.trim() !== '' && birthdate.trim() !== '' && phone.trim() !== '';
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>기본 정보 입력</Text>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>기본 정보 입력</Text>
+        </View>
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + scale(80) }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.pageWrapper, { maxWidth: MAX_WIDTH }]}>
@@ -183,7 +186,7 @@ export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpP
       </ScrollView>
 
       {/* Submit Button - 모든 항목 입력 시 활성화 */}
-      <View style={styles.submitButtonContainer}>
+      <View style={[styles.submitButtonContainer, { bottom: insets.bottom + scale(16) }]}>
         <TouchableOpacity
           style={[
             styles.submitButton,
@@ -340,12 +343,14 @@ const styles = StyleSheet.create({
   },
   header: {
     width: '100%',
-    height: scale(56),
     borderBottomWidth: scale(1),
     borderBottomColor: '#EAEAEA',
+    backgroundColor: '#FFFFFF',
+  },
+  headerContent: {
+    minHeight: scale(56),
     justifyContent: 'center' as any,
     alignItems: 'center' as any,
-    backgroundColor: '#FFFFFF',
   },
   headerTitle: {
     fontWeight: '700' as any,
@@ -356,8 +361,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: scale(16),
-    paddingTop: scale(48),
-    paddingBottom: scale(100),
+    paddingTop: scale(24),
     alignItems: 'center' as any,
   },
   pageWrapper: {
@@ -520,7 +524,6 @@ const styles = StyleSheet.create({
     position: 'absolute' as any,
     left: scale(16),
     right: scale(16),
-    bottom: scale(36),
     alignItems: 'center' as any,
   },
   submitButton: {

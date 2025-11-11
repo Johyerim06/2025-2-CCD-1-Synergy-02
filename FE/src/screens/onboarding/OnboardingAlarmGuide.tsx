@@ -5,7 +5,7 @@ import {
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import { scale } from '../../utils/scale';
@@ -18,6 +18,7 @@ export default function OnboardingAlarmGuide({ onComplete }: OnboardingAlarmGuid
   const { width } = useWindowDimensions();
   const isTablet = width > 600;
   const MAX_WIDTH = scale(isTablet ? 420 : 360);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     // 3초 후 자동으로 다음 화면으로 이동
@@ -30,7 +31,7 @@ export default function OnboardingAlarmGuide({ onComplete }: OnboardingAlarmGuid
   }, [onComplete]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <StatusBar style="dark" />
       <View style={styles.container}>
         <View style={[styles.card, { maxWidth: MAX_WIDTH }]}>

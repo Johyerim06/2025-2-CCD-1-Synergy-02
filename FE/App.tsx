@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import * as SplashScreenExpo from 'expo-splash-screen';
 import { Asset } from 'expo-asset';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Import all screens
 import SplashScreen from './src/screens/SplashScreen';
@@ -469,41 +470,45 @@ export default function App() {
 
   if (currentScreen !== 'Menu') {
     return (
-      <View style={styles.container} onLayout={onLayoutRootView}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => setCurrentScreen('Menu')}
-        >
-          <Text style={styles.backButtonText}>← 메뉴로 돌아가기</Text>
-        </TouchableOpacity>
-        {renderScreen()}
-      </View>
+      <SafeAreaProvider>
+        <View style={styles.container} onLayout={onLayoutRootView}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => setCurrentScreen('Menu')}
+          >
+            <Text style={styles.backButtonText}>← 메뉴로 돌아가기</Text>
+          </TouchableOpacity>
+          {renderScreen()}
+        </View>
+      </SafeAreaProvider>
     );
   }
 
   return (
-    <SafeAreaView style={styles.menuContainer} onLayout={onLayoutRootView}>
-      <View style={styles.menuHeader}>
-        <Text style={styles.menuTitle}>🎨 화면 선택 메뉴</Text>
-        <Text style={styles.menuSubtitle}>보고 싶은 화면을 선택하세요</Text>
-      </View>
-      <ScrollView style={styles.menuScroll} showsVerticalScrollIndicator={false}>
-        {screens.map((section) => (
-          <View key={section.category} style={styles.section}>
-            <Text style={styles.sectionTitle}>{section.category}</Text>
-            {section.items.map((screen) => (
-              <TouchableOpacity
-                key={screen.name}
-                style={styles.menuButton}
-                onPress={() => setCurrentScreen(screen.name as ScreenName)}
-              >
-                <Text style={styles.menuButtonText}>{screen.label}</Text>
-            </TouchableOpacity>
-            ))}
-          </View>
-        ))}
-      </ScrollView>
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.menuContainer} onLayout={onLayoutRootView}>
+        <View style={styles.menuHeader}>
+          <Text style={styles.menuTitle}>🎨 화면 선택 메뉴</Text>
+          <Text style={styles.menuSubtitle}>보고 싶은 화면을 선택하세요</Text>
+        </View>
+        <ScrollView style={styles.menuScroll} showsVerticalScrollIndicator={false}>
+          {screens.map((section) => (
+            <View key={section.category} style={styles.section}>
+              <Text style={styles.sectionTitle}>{section.category}</Text>
+              {section.items.map((screen) => (
+                <TouchableOpacity
+                  key={screen.name}
+                  style={styles.menuButton}
+                  onPress={() => setCurrentScreen(screen.name as ScreenName)}
+                >
+                  <Text style={styles.menuButtonText}>{screen.label}</Text>
+              </TouchableOpacity>
+              ))}
+            </View>
+          ))}
+        </ScrollView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 

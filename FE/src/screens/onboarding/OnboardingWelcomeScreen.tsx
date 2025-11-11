@@ -4,10 +4,10 @@ import {
   Text, 
   StyleSheet, 
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import { scale } from '../../utils/scale';
@@ -20,6 +20,7 @@ export default function OnboardingWelcomeScreen({ onStartPress }: OnboardingWelc
   const { width } = useWindowDimensions();
   const isTablet = width > 600;
   const MAX_WIDTH = scale(isTablet ? 420 : 360);
+  const insets = useSafeAreaInsets();
 
   const handleStartPress = () => {
     console.log('시작하기 버튼 클릭');
@@ -27,10 +28,10 @@ export default function OnboardingWelcomeScreen({ onStartPress }: OnboardingWelc
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <StatusBar style="dark" />
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + scale(80) }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.pageWrapper, { maxWidth: MAX_WIDTH }]}>
@@ -46,7 +47,7 @@ export default function OnboardingWelcomeScreen({ onStartPress }: OnboardingWelc
       </ScrollView>
 
       {/* 하단 고정 버튼 */}
-      <View style={styles.submitButtonContainer}>
+      <View style={[styles.submitButtonContainer, { bottom: insets.bottom + scale(16) }]}>
         <TouchableOpacity style={styles.button} onPress={handleStartPress}>
           <Text style={styles.buttonText}>시작하기</Text>
         </TouchableOpacity>
@@ -63,7 +64,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: scale(16),
     paddingTop: scale(70),
-    paddingBottom: scale(120),
     alignItems: 'center' as any,
     flexGrow: 1,
   },
@@ -89,7 +89,6 @@ const styles = StyleSheet.create({
     position: 'absolute' as any,
     left: scale(16),
     right: scale(16),
-    bottom: scale(36),
     alignItems: 'center' as any,
   },
   button: {

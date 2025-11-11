@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
   useWindowDimensions,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { scale } from '../../utils/scale';
 
@@ -20,6 +20,7 @@ export default function OnboardingMorningTimeSet({ onNext }: OnboardingMorningTi
   const { width } = useWindowDimensions();
   const isTablet = width > 600;
   const MAX_WIDTH = scale(isTablet ? 420 : 360);
+  const insets = useSafeAreaInsets();
 
   const times = ['6시', '7시', '8시', '9시', '10시', '11시'];
 
@@ -37,16 +38,18 @@ export default function OnboardingMorningTimeSet({ onNext }: OnboardingMorningTi
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <StatusBar style="dark" />
       
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerText}>복약 시간 설정</Text>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerText}>복약 시간 설정</Text>
+        </View>
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + scale(80) }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.pageWrapper, { maxWidth: MAX_WIDTH }]}>
@@ -82,7 +85,7 @@ export default function OnboardingMorningTimeSet({ onNext }: OnboardingMorningTi
       </ScrollView>
 
       {/* Next Button */}
-      <View style={styles.buttonContainer}>
+      <View style={[styles.buttonContainer, { bottom: insets.bottom + scale(16) }]}>
         <TouchableOpacity 
           style={[
             styles.nextButton,
@@ -105,12 +108,14 @@ const styles = StyleSheet.create({
   },
   header: {
     width: '100%',
-    height: scale(56),
-    justifyContent: 'center' as any,
-    alignItems: 'center' as any,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: scale(1),
     borderBottomColor: '#EAEAEA',
+  },
+  headerContent: {
+    minHeight: scale(56),
+    justifyContent: 'center' as any,
+    alignItems: 'center' as any,
   },
   headerText: {
     fontSize: scale(27),
@@ -121,8 +126,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: scale(16),
-    paddingTop: scale(48),
-    paddingBottom: scale(100),
+    paddingTop: scale(24),
     alignItems: 'center' as any,
     flexGrow: 1,
   },
@@ -176,7 +180,6 @@ const styles = StyleSheet.create({
     position: 'absolute' as any,
     left: scale(16),
     right: scale(16),
-    bottom: scale(36),
     alignItems: 'center' as any,
   },
   nextButton: {

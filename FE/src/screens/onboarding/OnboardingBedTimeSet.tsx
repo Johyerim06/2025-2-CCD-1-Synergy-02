@@ -4,10 +4,10 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { scale } from '../../utils/scale';
 
@@ -21,6 +21,7 @@ export default function OnboardingBedTimeSet({ onComplete }: OnboardingBedTimeSe
   const { width } = useWindowDimensions();
   const isTablet = width > 600;
   const MAX_WIDTH = scale(isTablet ? 420 : 360);
+  const insets = useSafeAreaInsets();
 
   const [selectedTime, setSelectedTime] = useState<number | null>(null);
 
@@ -38,16 +39,18 @@ export default function OnboardingBedTimeSet({ onComplete }: OnboardingBedTimeSe
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <StatusBar style="dark" />
 
       {/* 헤더 */}
-      <View style={styles.header}>
-        <Text style={styles.headerText}>복약 시간 설정</Text>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerText}>복약 시간 설정</Text>
+        </View>
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + scale(80) }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.pageWrapper, { maxWidth: MAX_WIDTH }]}>
@@ -83,7 +86,7 @@ export default function OnboardingBedTimeSet({ onComplete }: OnboardingBedTimeSe
       </ScrollView>
 
       {/* 완료 버튼 */}
-      <View style={styles.buttonContainer}>
+      <View style={[styles.buttonContainer, { bottom: insets.bottom + scale(16) }]}>
         <TouchableOpacity
           style={[
             styles.nextButton,
@@ -113,12 +116,14 @@ const styles = StyleSheet.create({
   },
   header: {
     width: '100%',
-    height: scale(56), // Consistent header height
-    justifyContent: 'center' as any,
-    alignItems: 'center' as any,
     backgroundColor: '#FFFFFF', // Consistent header background
     borderBottomWidth: scale(1),
     borderBottomColor: '#EAEAEA', // Consistent header border
+  },
+  headerContent: {
+    minHeight: scale(56), // Consistent header height
+    justifyContent: 'center' as any,
+    alignItems: 'center' as any,
   },
   headerText: {
     fontSize: scale(27),
@@ -129,8 +134,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: scale(16),
-    paddingTop: scale(48), // Adjusted to move content down by 24px
-    paddingBottom: scale(100), // Consistent bottom padding for fixed button
+    paddingTop: scale(24),
     alignItems: 'center' as any,
     flexGrow: 1,
   },
@@ -184,7 +188,6 @@ const styles = StyleSheet.create({
     position: 'absolute' as any,
     left: scale(16),
     right: scale(16),
-    bottom: scale(36),
     alignItems: 'center' as any,
   },
   nextButton: {
