@@ -420,8 +420,8 @@ public class MedicationService2 {
         switch (taken) {
             case 1: acno = 1L; break;
             case 2: acno = 6L; break;
-            case 3: acno = 26L; break;
-            case 4: acno = 30L; break;
+            case 3: acno = 11L; break;
+            case 4: acno = 15L; break;
             default: // 4회 초과는 일단 4회(30L)로 처리
                 acno = 30L;
         }
