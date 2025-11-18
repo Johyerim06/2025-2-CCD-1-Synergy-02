@@ -154,6 +154,8 @@ public class EventService {
             descriptionMap.put(med.getUmno(), savedDescription);
         }
 
+        Map<Long, Integer> eventCountPerUmno = new HashMap<>();
+
         for (AlarmTimeEntity alarm : alarmTimes) {
             Long currentUmno = alarm.getUserMedicine().getUmno();
 
@@ -175,7 +177,21 @@ public class EventService {
                     .build();
 
             newEvents.add(newEvent);
+
+            eventCountPerUmno.put(currentUmno, eventCountPerUmno.getOrDefault(currentUmno, 0) + 1);
         }
+
+        for (Map.Entry<Long, Integer> entry : eventCountPerUmno.entrySet()) {
+            Long umno = entry.getKey();
+            Integer newEventCount = entry.getValue(); // 오늘 생성된 이벤트 갯수
+
+            CycleEntity cycleToUpdate = cycleMap.get(umno); // (N+1 방지) 이미 로드한 객체 재사용
+            if (cycleToUpdate != null) {
+                int currentCycle = (cycleToUpdate.getCurCycle() != null) ? cycleToUpdate.getCurCycle() : 0;
+                cycleToUpdate.setCurCycle(currentCycle + newEventCount);
+            }
+        }
+
         return newEvents;
     }
 
