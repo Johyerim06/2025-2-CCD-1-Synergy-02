@@ -34,7 +34,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/users", "/auth/login").permitAll()
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/audio/**").permitAll()  // 오디오 파일 접근 허용
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
