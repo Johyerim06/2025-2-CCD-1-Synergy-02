@@ -2,12 +2,12 @@ import os
 import sys
 import openai
 import json
+import base64
 
 # --- 1. OpenAI API 키 설정 ---
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 # --- 2. 작업별 함수 정의 ---
-
 def match_medicines(ocr_names_json, db_meds_json):
     """
     [Mode 1] OCR 약품명과 DB 약품명을 매칭하여 mdno 리스트를 반환합니다.
@@ -127,11 +127,50 @@ def create_description(med_info, med_desc, warnings_json):
         sys.exit(1)
 
 
-# --- 3. (메인 실행부) Java에서 호출 ---
+def create_report_summary(report_json):
+    """
+    [Mode 4] 리포트 전체 데이터를 바탕으로 복약 순응도 + 부작용을 요약한 총평을 생성합니다.
+    (일반 Chat Completion 사용)
+    """
+
+    system_prompt = """
+    당신은 고령자 복약 관리를 돕는 약사입니다.
+    사용자가 복약 기간, 복약 횟수, 실제 복용 횟수, 부작용 발생 현황이 정리된 리포트 데이터를 제공합니다.
+    이 정보를 바탕으로 다음 내용을 포함한 한국어 총평을 3~5문장 정도로 작성하세요.
+
+    - 전체 복약 순응도(잘 지켰는지, 어느 정도인지)
+    - 자주 나타난 부작용과 주의할 점
+    - 복약을 계속할 때의 간단한 조언 (예: 복약 시간 준수, 특정 증상 지속 시 병원 방문 권유 등)
+
+    말투는 친절하지만 과도하게 가볍지 않게,
+    보호자나 의료진이 읽어도 무리가 없도록 작성하세요.
+    답변은 오직 총평 문장만 출력하고 다른 설명은 덧붙이지 마세요.
+    """
+
+    user_prompt = f"다음은 환자의 복약 리포트 데이터입니다:\n{report_json}"
+
+    try:
+        response = openai.chat.completions.create(
+            model="gpt-4-0613",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ]
+        )
+        result_text = response.choices[0].message.content.strip()
+
+        encoded = base64.b64encode(result_text.encode("utf-8")).decode("ascii")
+        return encoded
+
+
+    except Exception as e:
+        print(f"Error in create_report_summary: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     try:
-        mode = sys.argv[1] # Java가 넘겨준 첫 번째 인자 (mode)
-
+        mode = sys.argv[1]
         output = None
 
         if mode == "match_meds":
@@ -149,11 +188,14 @@ if __name__ == "__main__":
             warnings_json = sys.argv[4]
             output = create_description(med_info, med_desc, warnings_json)
 
+        elif mode == "report_summary":
+            report_json = sys.argv[2]
+            output = create_report_summary(report_json)
+
         else:
             print(f"Invalid mode: {mode}", file=sys.stderr)
             sys.exit(1)
 
-        # (중요) Java가 읽을 수 있도록 최종 결과를 JSON 형식으로 stdout에 출력
         print(json.dumps(output, ensure_ascii=False))
 
     except Exception as e:

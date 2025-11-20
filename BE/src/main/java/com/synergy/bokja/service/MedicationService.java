@@ -47,6 +47,7 @@ public class MedicationService {
     private final AlarmTimeRepository alarmTimeRepository;
     private final UserTimeRepository userTimeRepository;
     private final TimeRepository timeRepository;
+    private final ReportRepository reportRepository;
 
     private final ObjectMapper objectMapper;
 
@@ -145,6 +146,17 @@ public class MedicationService {
                     .endDate(LocalDate.now().plusDays(maxDoseDays - 1))
                     .build();
             cycleRepository.save(newCycle);
+
+            // === report_table 저장 (리포트 뼈대 생성) ===
+            // - userMedicine: 이번에 생성된 복약
+            // - cycle: 이번에 생성된 주기
+            // - description: 아직 총평이 없으므로 빈 문자열("")로 초기화
+            ReportEntity report = ReportEntity.builder()
+                    .userMedicine(savedPrescription)
+                    .cycle(newCycle)
+                    .description("")  // nullable==false라서 null 대신 빈 문자열
+                    .build();
+            reportRepository.save(report);
 
             // === 퀴즈 생성 ===
             generateQuizzes(savedPrescription, matchedMeds, combinations, category);
