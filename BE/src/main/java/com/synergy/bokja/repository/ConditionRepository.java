@@ -4,6 +4,7 @@ import com.synergy.bokja.entity.ConditionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ConditionRepository extends JpaRepository<ConditionEntity, Long> {
@@ -14,4 +15,6 @@ public interface ConditionRepository extends JpaRepository<ConditionEntity, Long
     List<ConditionEntity> findAllByUser_UnoAndEffect_EfnoAndTimeBetween(
             Long uno, Long efno, Timestamp startTime, Timestamp endTime
     );
+
+    List<ConditionEntity> findAllByUser_UnoAndTimeBetween(Long uno, LocalDateTime start, LocalDateTime end);
 }

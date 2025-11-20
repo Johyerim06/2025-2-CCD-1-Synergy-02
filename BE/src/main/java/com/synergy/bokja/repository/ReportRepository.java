@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface ReportRepository extends JpaRepository<ReportEntity, Long> {
 
     // 특정 복약(umno)에 속한 리포트 목록 조회
-    List<ReportEntity> findAllByUserMedicine_Umno(Long umno);
+    List<ReportEntity> findAllByUserMedicine_UmnoIn(List<Long> umnos);
 
     // 리포트 단건 상세 조회
     Optional<ReportEntity> findByRno(Long rno);
