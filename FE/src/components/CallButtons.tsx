@@ -1,7 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import responsive from '../utils/responsive';
 
 interface CallButtonProps {
   onPress?: () => void;
@@ -26,7 +25,7 @@ export const CallButton = React.memo(({ onPress, type }: CallButtonProps) => {
 // 전화 수신 아이콘 (초록 버튼)
 const AcceptIcon = React.memo(() => {
   return (
-    <Svg width={responsive(45)} height={responsive(45)} viewBox="0 0 24 24" fill="none">
+    <Svg width={45} height={45} viewBox="0 0 24 24" fill="none">
       <Path
         d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"
         fill="#FFFFFF"
@@ -38,7 +37,7 @@ const AcceptIcon = React.memo(() => {
 // 전화 끊기 아이콘 (빨간 버튼)
 const DeclineIcon = React.memo(() => {
   return (
-    <Svg width={responsive(45)} height={responsive(45)} viewBox="0 0 24 24" fill="none">
+    <Svg width={45} height={45} viewBox="0 0 24 24" fill="none">
       <Path
         d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.956.956 0 01-.29-.7c0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.52-.29.7l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28a11.27 11.27 0 00-2.67-1.85.99.99 0 01-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"
         fill="#FFFFFF"
@@ -49,18 +48,18 @@ const DeclineIcon = React.memo(() => {
 
 const styles = StyleSheet.create({
   button: {
-    width: responsive(80),
-    height: responsive(80),
-    borderRadius: responsive(40),
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     alignItems: 'center' as any,
     justifyContent: 'center' as any,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: responsive(2),
+      height: 2,
     },
     shadowOpacity: 0.25,
-    shadowRadius: responsive(3.84),
+    shadowRadius: 3.84,
     elevation: 5,
   },
 });

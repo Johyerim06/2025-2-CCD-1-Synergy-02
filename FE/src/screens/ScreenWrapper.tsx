@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import responsive from '../utils/responsive';
 
 interface ScreenWrapperProps {
   children: React.ReactNode;
@@ -28,17 +27,17 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
-    bottom: responsive(20),
-    left: responsive(20),
+    bottom: 20,
+    left: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingVertical: responsive(12),
-    paddingHorizontal: responsive(20),
-    borderRadius: responsive(25),
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
     zIndex: 1000,
   },
   backButtonText: {
     color: '#fff',
-    fontSize: responsive(16),
+    fontSize: 16,
     fontWeight: '600' as any,
   },
 });

@@ -7,11 +7,10 @@ import {
   ScrollView,
   Image,
   TextInput,
+  SafeAreaView,
   useWindowDimensions,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import responsive from '../../utils/responsive';
 
 
 interface Medicine {
@@ -49,8 +48,7 @@ interface PrescriptionAnalysisResultScreenProps {
 export default function PrescriptionAnalysisResultScreen({ onGoHome }: PrescriptionAnalysisResultScreenProps) {
   const { width } = useWindowDimensions();
   const isTablet = width > 600;
-  const MAX_WIDTH = responsive(isTablet ? 420 : 360);
-  const insets = useSafeAreaInsets();
+  const MAX_WIDTH = isTablet ? 420 : 360;
 
   // TODO: navigation과 route params는 나중에 연결
   const source = 'prescription' as 'prescription' | 'medicationEnvelope'; // 기본값
@@ -126,18 +124,16 @@ export default function PrescriptionAnalysisResultScreen({ onGoHome }: Prescript
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
       
       {/* Header - 고정 */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>{headerText}</Text>
-        </View>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>{headerText}</Text>
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + responsive(120) }]}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.pageWrapper, { maxWidth: MAX_WIDTH }]}>
@@ -219,7 +215,7 @@ export default function PrescriptionAnalysisResultScreen({ onGoHome }: Prescript
       </ScrollView>
 
       {/* 하단 고정 버튼 */}
-      <View style={[styles.buttonContainer, { bottom: insets.bottom + responsive(36) }]}>
+      <View style={styles.buttonContainer}>
         <TouchableOpacity 
           style={[styles.submitButton, { maxWidth: MAX_WIDTH }]}
           onPress={handleGoHome}
@@ -238,24 +234,23 @@ const styles = StyleSheet.create({
   },
   header: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: responsive(1),
-    borderBottomColor: '#EAEAEA',
-  },
-  headerContent: {
-    minHeight: responsive(56),
+    height: 56,
     justifyContent: 'center' as any,
     alignItems: 'center' as any,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EAEAEA',
+    backgroundColor: '#FFFFFF',
   },
   headerTitle: {
     fontWeight: '700' as any,
-    fontSize: responsive(27),
+    fontSize: 27,
     color: '#1A1A1A',
-    lineHeight: responsive(32.4),
+    lineHeight: 32.4,
   },
   scrollContent: {
-    paddingHorizontal: responsive(16),
-    paddingTop: responsive(24),
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 120, // 하단 버튼 공간 확보
     alignItems: 'center' as any,
   },
   pageWrapper: {
@@ -264,81 +259,81 @@ const styles = StyleSheet.create({
   },
   medicineInfoSection: {
     width: '100%',
-    marginBottom: responsive(15),
+    marginBottom: 15,
   },
   categoryRow: {
     flexDirection: 'row' as any,
     alignItems: 'center' as any,
-    marginBottom: responsive(8),
+    marginBottom: 8,
   },
   medicineTag: {
     backgroundColor: '#FFF4C9',
-    borderWidth: responsive(1),
+    borderWidth: 1,
     borderColor: '#545045',
-    borderRadius: responsive(15),
-    paddingHorizontal: responsive(16),
-    paddingVertical: responsive(8),
-    marginRight: responsive(8),
+    borderRadius: 15,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
   },
   medicineTagText: {
     fontWeight: '700' as any,
-    fontSize: responsive(24),
+    fontSize: 24,
     color: '#545045',
-    lineHeight: responsive(28.8),
+    lineHeight: 28.8,
   },
   medicineTagInput: {
     fontWeight: '700' as any,
-    fontSize: responsive(24),
+    fontSize: 24,
     color: '#545045',
-    lineHeight: responsive(28.8),
-    minWidth: responsive(100),
+    lineHeight: 28.8,
+    minWidth: 100,
   },
   editButtonContainer: {
     justifyContent: 'center' as any,
     alignItems: 'center' as any,
   },
   editButtonBackground: {
-    width: responsive(44),
-    height: responsive(43),
+    width: 44,
+    height: 43,
     backgroundColor: '#60584d',
-    borderRadius: responsive(200),
+    borderRadius: 200,
     justifyContent: 'center' as any,
     alignItems: 'center' as any,
   },
   editIcon: {
-    width: responsive(25),
-    height: responsive(25),
+    width: 25,
+    height: 25,
   },
   hospitalInfo: {
     fontWeight: '700' as any,
-    fontSize: responsive(32),
+    fontSize: 32,
     color: '#666666',
-    lineHeight: responsive(38.4),
-    marginBottom: responsive(4),
+    lineHeight: 38.4,
+    marginBottom: 4,
   },
   medicationCard: {
     width: '100%',
     backgroundColor: '#FFFFFF',
-    borderRadius: responsive(11),
-    paddingVertical: responsive(12),
-    paddingHorizontal: responsive(18),
-    marginBottom: responsive(8),
+    borderRadius: 11,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    marginBottom: 8,
   },
   medicationItemWrapper: {
     flexDirection: 'row' as any,
-    marginBottom: responsive(12),
+    marginBottom: 12,
   },
   medicationLeftBar: {
-    width: responsive(3),
+    width: 3,
     alignSelf: 'stretch',
     backgroundColor: '#60584D',
-    marginRight: responsive(14),
+    marginRight: 14,
   },
   medicationContentWrapper: {
     flex: 1,
   },
   medicationItem: {
-    paddingVertical: responsive(14),
+    paddingVertical: 14,
   },
   medicationContent: {
     flex: 1,
@@ -346,76 +341,77 @@ const styles = StyleSheet.create({
   medicationHeader: {
     flexDirection: 'row' as any,
     alignItems: 'center' as any,
-    marginBottom: responsive(6),
+    marginBottom: 6,
   },
   medicationNumber: {
     fontWeight: '400' as any,
-    fontSize: responsive(20),
+    fontSize: 20,
     color: '#99A1AF',
-    lineHeight: responsive(28),
-    marginRight: responsive(10),
+    lineHeight: 28,
+    marginRight: 10,
   },
   medicationTypeTag: {
     backgroundColor: '#FFEDA5',
-    borderRadius: responsive(25),
-    paddingHorizontal: responsive(16),
-    paddingVertical: responsive(6),
+    borderRadius: 25,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
   },
   medicationTypeText: {
     fontWeight: '700' as any,
-    fontSize: responsive(16),
+    fontSize: 16,
     color: '#60584D',
-    lineHeight: responsive(20.8),
+    lineHeight: 20.8,
   },
   medicationName: {
     fontWeight: '700' as any,
-    fontSize: responsive(20),
+    fontSize: 20,
     color: '#364153',
-    lineHeight: responsive(24),
+    lineHeight: 24,
   },
   warningSection: {
     backgroundColor: '#FFF9E6',
-    borderRadius: responsive(12),
-    padding: responsive(12),
-    borderWidth: responsive(1),
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
     borderColor: '#FFE5B4',
   },
   warningHeader: {
     flexDirection: 'row' as any,
     alignItems: 'center' as any,
-    marginBottom: responsive(8),
+    marginBottom: 8,
   },
   warningIcon: {
-    width: responsive(20),
-    height: responsive(20),
-    marginRight: responsive(8),
+    width: 20,
+    height: 20,
+    marginRight: 8,
   },
   warningTitle: {
-    fontSize: responsive(16),
+    fontSize: 16,
     fontWeight: '700' as any,
     color: '#D97706',
   },
   warningText: {
-    fontSize: responsive(14),
+    fontSize: 14,
     fontWeight: '400' as any,
     color: '#92400E',
   },
   buttonContainer: {
     position: 'absolute' as any,
-    left: responsive(16),
-    right: responsive(16),
+    left: 16,
+    right: 16,
+    bottom: 36,
     alignItems: 'center' as any,
   },
   submitButton: {
     width: '100%',
-    height: responsive(66),
+    height: 66,
     backgroundColor: '#60584d',
-    borderRadius: responsive(200),
+    borderRadius: 200,
     justifyContent: 'center' as any,
     alignItems: 'center' as any,
   },
   submitButtonText: {
-    fontSize: responsive(27),
+    fontSize: 27,
     fontWeight: '700' as any,
     color: '#FFFFFF',
   },

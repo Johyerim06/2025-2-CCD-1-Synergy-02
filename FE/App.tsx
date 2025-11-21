@@ -2,10 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import * as SplashScreenExpo from 'expo-splash-screen';
 import { Asset } from 'expo-asset';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import { setupNotificationListeners, createNotificationChannel } from './src/services/notificationService';
-
 
 // Import all screens
 import SplashScreen from './src/screens/SplashScreen';
@@ -494,7 +492,6 @@ export default function App() {
 
   if (currentScreen !== 'Menu') {
     return (
-      <SafeAreaProvider>
       <View style={styles.container} onLayout={onLayoutRootView}>
         <TouchableOpacity 
           style={styles.backButton}
@@ -504,12 +501,10 @@ export default function App() {
         </TouchableOpacity>
         {renderScreen()}
       </View>
-      </SafeAreaProvider>
     );
   }
 
   return (
-    <SafeAreaProvider>
     <SafeAreaView style={styles.menuContainer} onLayout={onLayoutRootView}>
       <View style={styles.menuHeader}>
         <Text style={styles.menuTitle}>🎨 화면 선택 메뉴</Text>
@@ -532,7 +527,6 @@ export default function App() {
         ))}
       </ScrollView>
     </SafeAreaView>
-    </SafeAreaProvider>
   );
 }
 

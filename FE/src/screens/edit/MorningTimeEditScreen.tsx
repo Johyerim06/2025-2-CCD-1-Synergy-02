@@ -6,10 +6,9 @@ import {
   TouchableOpacity,
   ScrollView,
   useWindowDimensions,
+  SafeAreaView,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import responsive from '../../utils/responsive';
 
 interface MorningTimeEditScreenProps {
   onNext?: () => void;
@@ -19,8 +18,7 @@ export default function MorningTimeEditScreen({ onNext }: MorningTimeEditScreenP
   const [selectedTime, setSelectedTime] = useState<string | null>('7시'); // 기존 시간으로 초기화
   const { width } = useWindowDimensions();
   const isTablet = width > 600;
-  const MAX_WIDTH = responsive(isTablet ? 420 : 360);
-  const insets = useSafeAreaInsets();
+  const MAX_WIDTH = isTablet ? 420 : 360;
 
   const times = ['6시', '7시', '8시', '9시', '10시', '11시'];
 
@@ -38,18 +36,16 @@ export default function MorningTimeEditScreen({ onNext }: MorningTimeEditScreenP
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
       
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerText}>복약 시간 수정</Text>
-        </View>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>복약 시간 수정</Text>
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + responsive(80) }]}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.pageWrapper, { maxWidth: MAX_WIDTH }]}>
@@ -85,7 +81,7 @@ export default function MorningTimeEditScreen({ onNext }: MorningTimeEditScreenP
       </ScrollView>
 
       {/* Next Button */}
-      <View style={[styles.buttonContainer, { bottom: insets.bottom + responsive(16) }]}>
+      <View style={styles.buttonContainer}>
         <TouchableOpacity 
           style={[
             styles.nextButton,
@@ -108,25 +104,24 @@ const styles = StyleSheet.create({
   },
   header: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: responsive(1),
-    borderBottomColor: '#EAEAEA',
-  },
-  headerContent: {
-    minHeight: responsive(56),
+    height: 56,
     justifyContent: 'center' as any,
     alignItems: 'center' as any,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EAEAEA',
   },
   headerText: {
-    fontSize: responsive(27),
+    fontSize: 27,
     fontWeight: '700' as any,
     color: '#1A1A1A',
-    lineHeight: responsive(32.4),
+    lineHeight: 32.4,
     textAlign: 'center',
   },
   scrollContent: {
-    paddingHorizontal: responsive(16),
-    paddingTop: responsive(24),
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 100,
     alignItems: 'center' as any,
     flexGrow: 1,
   },
@@ -135,10 +130,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   title: {
-    fontSize: responsive(24),
+    fontSize: 24,
     fontWeight: '700' as any,
     color: '#1e2939',
-    marginBottom: responsive(24),
+    marginBottom: 24,
     textAlign: 'left',
   },
   timeButtonsContainer: {
@@ -156,7 +151,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center' as any,
     alignItems: 'center' as any,
-    marginBottom: responsive(24),
+    marginBottom: 24,
   },
   timeButtonSelected: {
     backgroundColor: '#60584d',
@@ -165,9 +160,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffcc02',
   },
   timeButtonText: {
-    fontSize: responsive(48),
+    fontSize: 48,
     fontWeight: '700' as any,
-    lineHeight: responsive(57.6),
+    lineHeight: 57.6,
   },
   timeButtonTextSelected: {
     color: '#ffffff',
@@ -198,9 +193,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#c4bcb1',
   },
   nextButtonText: {
-    fontSize: responsive(27),
+    fontSize: 27,
     fontWeight: '700' as any,
     color: '#ffffff',
-    lineHeight: responsive(32.4),
+    lineHeight: 32.4,
   },
 });
