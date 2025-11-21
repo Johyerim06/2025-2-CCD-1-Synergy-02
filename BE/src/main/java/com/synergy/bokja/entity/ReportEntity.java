@@ -21,16 +21,8 @@ public class ReportEntity {
     private UserMedicineEntity userMedicine;
 
     @ManyToOne
-    @JoinColumn(name = "cdno")
-    private ConditionEntity condition;
-
-    @ManyToOne
     @JoinColumn(name = "cyno")
     private CycleEntity cycle;
-
-    @ManyToOne
-    @JoinColumn(name = "umino")
-    private UserMedicineItemEntity userMedicineItem;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -129,7 +130,8 @@ public class EventService {
                     if (cycle == null) return false;
                     LocalDate start = cycle.getStartDate();
                     LocalDate end = cycle.getEndDate();
-                    return !today.isBefore(start) && !today.isAfter(end);
+                    return (today.isEqual(start) || today.isAfter(start)) &&
+                            (today.isEqual(end) || today.isBefore(end));
                 })
                 .toList();
 
@@ -215,14 +217,24 @@ public class EventService {
      */
     public EventItemResponseDTO getEventList(Long uno) {
 
-        // 1. 'uno'로 오늘 '발행' 상태인 이벤트만 조회
-        List<EventEntity> events = eventRepository.findAllByUserMedicine_User_UnoAndStatus(uno, EventStatus.발행);
+        // 1. 오늘 날짜의 범위 계산 (00:00:00 ~ 23:59:59.999999999)
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+
+        // 2. (수정) 날짜 범위 조건을 포함하여 조회
+        List<EventEntity> events = eventRepository.findAllByUserMedicine_User_UnoAndStatusAndCreatedAtBetween(
+                uno,
+                EventStatus.발행,
+                startOfDay,
+                endOfDay
+        );
 
         if (events.isEmpty()) {
             return new EventItemResponseDTO(uno, new ArrayList<>());
         }
 
-        // 2. 공통 DTO 빌더를 호출하여 반환
+        // 3. 공통 DTO 빌더를 호출하여 반환 (기존 동일)
         return buildEventResponseDTO(uno, events);
     }
 

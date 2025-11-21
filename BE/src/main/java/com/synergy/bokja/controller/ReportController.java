@@ -29,11 +29,12 @@ public class ReportController {
 
         Long uno = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Long umno = reportService.findUmno(uno);
+        // uno 기준 조회
+        ReportListResponseDTO result = reportService.getUserReports(uno);
 
-        ReportListResponseDTO result = reportService.getUserReports(umno);
         BaseResponse<ReportListResponseDTO> response =
-                new BaseResponse<>(1000, "리포트 목록 조회 성공", result);
+                new BaseResponse<>(1000, "리포트 목록 조회에 성공하였습니다.", result);
+
         return ResponseEntity.ok(response);
     }
 
@@ -48,7 +49,7 @@ public class ReportController {
         Long uno = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         ReportDetailResponseDTO result = reportService.getReportDetail(rno);
         BaseResponse<ReportDetailResponseDTO> response =
-                new BaseResponse<>(1000, "리포트 상세 조회 성공", result);
+                new BaseResponse<>(1000, "리포트 상세 조회에 성공하였습니다.", result);
         return ResponseEntity.ok(response);
     }
 
@@ -63,7 +64,7 @@ public class ReportController {
         Long uno = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         ReportSummaryResponseDTO result = reportService.getReportSummary(rno);
         BaseResponse<ReportSummaryResponseDTO> response =
-                new BaseResponse<>(1000, "리포트 요약 조회 성공.", result);
+                new BaseResponse<>(1000, "리포트 요약 조회에 성공하였습니다.", result);
         return ResponseEntity.ok(response);
     }
 }
