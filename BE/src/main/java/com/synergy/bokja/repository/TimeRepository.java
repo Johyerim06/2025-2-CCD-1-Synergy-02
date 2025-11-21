@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TimeRepository extends JpaRepository<TimeEntity, Long> {
-    List<TimeEntity> findAllByType(String type);
+    List<TimeEntity> findByType(String type);
     Optional<TimeEntity> findByTypeAndTime(String type, LocalTime time);
+
 }

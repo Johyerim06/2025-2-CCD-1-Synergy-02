@@ -34,7 +34,6 @@ public class MedicationController {
 
         String jwtToken = token.replace("Bearer ", "");
         if (!jwtTokenProvider.validateToken(jwtToken)) {
-            // 🔹 시니어 컨벤션: FORBIDDEN + "Invalid or expired token"
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid or expired token");
         }
 
