@@ -1,11 +1,20 @@
 # Base Image
 FROM eclipse-temurin:17-jdk
 
-# Python 및 필수 라이브러리 설치
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
-    pip3 install --no-cache-dir requests google-cloud-texttospeech openai && \
-    apt-get clean
+# Python 설치
+RUN apt-get update --allow-insecure-repositories --allow-releaseinfo-change --allow-unauthenticated && \
+    apt-get install -y --no-install-recommends python3 python3-pip python3-venv && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# 가상 환경 생성
+RUN python3 -m venv /opt/venv
+
+#  가상 환경 등록
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Python 라이브러리 설치
+RUN pip install --no-cache-dir requests google-cloud-texttospeech openai
 
 # 작업 디렉토리 설정
 WORKDIR /app

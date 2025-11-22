@@ -3,7 +3,6 @@
 .gradle/
 !gradle/wrapper/gradle-wrapper.jar
 bin/
-/uploads/
 
 # IntelliJ (Old)
 out/
@@ -35,4 +34,6 @@ service-account-key.json
 /src/main/resources/tts-token.json
 
 # Test files
+/uploads/
 test_tts_audio.html
+bokja-backend.tar
