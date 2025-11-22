@@ -1,29 +1,37 @@
-import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
-import Constants from 'expo-constants';
-
-// 알림 핸들러 설정
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+/**
+ * FCM 토큰 관련 유틸리티
+ * 
+ * 주의: PlatformConstants 에러 방지를 위해 현재 비활성화됨
+ * New Architecture 문제 해결 후 재활성화 필요
+ * 
+ * 문제 원인: expo-notifications가 내부적으로 expo-constants를 사용하는데,
+ * New Architecture 환경에서 PlatformConstants를 찾을 수 없어 에러 발생
+ */
 
 /**
  * FCM 토큰을 가져오는 함수
  * @returns FCM 토큰 문자열 또는 null
+ * 
+ * 주의: PlatformConstants 에러 방지를 위해 현재 비활성화됨
+ * New Architecture 문제 해결 후 재활성화 필요
  */
 export const getFcmToken = async (): Promise<string | null> => {
+  // PlatformConstants 에러 방지를 위해 일시적으로 비활성화
+  console.warn('FCM 토큰 기능이 일시적으로 비활성화되었습니다. (PlatformConstants 에러 방지)');
+  return null;
+  
+  /* 주석 처리된 원래 코드 - New Architecture 문제 해결 후 재활성화
   try {
+    // 알림 핸들러 초기화 (런타임 준비 후)
+    await initializeNotificationHandler();
+    const NotificationsModule = await getNotifications();
     // 알림 권한 요청
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } = await NotificationsModule.getPermissionsAsync();
     let finalStatus = existingStatus;
 
     // 권한이 없으면 요청
     if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
+      const { status } = await NotificationsModule.requestPermissionsAsync();
       finalStatus = status;
     }
 
@@ -35,32 +43,17 @@ export const getFcmToken = async (): Promise<string | null> => {
 
     // Android의 경우 채널 설정 필요
     if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
+      await NotificationsModule.setNotificationChannelAsync('default', {
         name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
+        importance: NotificationsModule.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#FF231F7C',
       });
     }
 
     // FCM 토큰 가져오기
-    // projectId를 app.json의 extra.eas.projectId에서 가져오거나 명시적으로 지정
-    let projectId: string | undefined;
-    
-    try {
-      // expo-constants가 사용 가능한 경우에만 사용
-      if (Constants && Constants.expoConfig) {
-        projectId = Constants.expoConfig?.extra?.eas?.projectId;
-      }
-    } catch (e) {
-      // Constants를 사용할 수 없는 경우 무시 (Expo Go에서는 정상)
-      console.warn('Constants를 사용할 수 없습니다 (정상일 수 있음):', e);
-    }
-    
-    // projectId가 있으면 명시적으로 전달, 없으면 기본값 사용 (Expo Go에서는 자동 감지)
-    const tokenData = projectId && projectId !== 'your-project-id-here'
-      ? await Notifications.getExpoPushTokenAsync({ projectId })
-      : await Notifications.getExpoPushTokenAsync();
+    // Expo Go에서는 projectId 없이 호출하면 자동으로 감지함
+    const tokenData = await NotificationsModule.getExpoPushTokenAsync();
 
     const token = tokenData.data;
     console.log('FCM 토큰 받기 성공:', token);
@@ -69,5 +62,6 @@ export const getFcmToken = async (): Promise<string | null> => {
     console.error('FCM 토큰 받기 실패:', error);
     return null;
   }
+  */
 };
 

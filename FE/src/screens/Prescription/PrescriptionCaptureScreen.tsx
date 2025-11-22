@@ -36,7 +36,6 @@ export default function PrescriptionCaptureScreen({ mode: propMode, onCapture, s
   } catch (error: any) {
     // NavigationContainer 밖에서 렌더링되는 경우 (예: App.tsx에서 직접 사용)
     // 이 경우 onCapture 콜백을 통해 화면 전환 처리
-    console.warn('네비게이션 컨텍스트를 사용할 수 없습니다. 콜백을 사용합니다.');
     navigation = null;
     route = null;
   }
@@ -75,12 +74,8 @@ export default function PrescriptionCaptureScreen({ mode: propMode, onCapture, s
         base64: false,
       });
       
-      console.log('촬영된 사진 전체 객체:', photo);
-      console.log('촬영된 사진 URI:', photo?.uri);
-      
       // URI 확인
       if (!photo || !photo.uri) {
-        console.error('사진 촬영 실패: photo 또는 photo.uri가 없습니다.');
         setShowRetakeMessage(true);
         setTimeout(() => {
           setShowRetakeMessage(false);
@@ -94,15 +89,8 @@ export default function PrescriptionCaptureScreen({ mode: propMode, onCapture, s
       try {
         const fileInfo = await FileSystem.getInfoAsync(photo.uri);
         if (fileInfo.exists && fileInfo.size !== undefined) {
-          const fileSizeMB = (fileInfo.size / (1024 * 1024)).toFixed(2);
-          const fileSizeKB = (fileInfo.size / 1024).toFixed(2);
-          console.log(`📸 원본 이미지 파일 크기: ${fileSizeMB} MB (${fileSizeKB} KB)`);
-          console.log(`📸 파일 크기 (bytes): ${fileInfo.size}`);
-          
           // 파일 크기가 5MB 이상이면 압축
           if (fileInfo.size > 5 * 1024 * 1024) { // 5MB 이상
-            console.log('📦 이미지 압축 시작...');
-            
             // 이미지 압축 (최대 너비 1920px, 품질 0.8)
             const manipulatedImage = await ImageManipulator.manipulateAsync(
               photo.uri,
@@ -114,26 +102,9 @@ export default function PrescriptionCaptureScreen({ mode: propMode, onCapture, s
             );
             
             finalImageUri = manipulatedImage.uri;
-            
-            // 압축된 이미지 크기 확인
-            const compressedFileInfo = await FileSystem.getInfoAsync(finalImageUri);
-            if (compressedFileInfo.exists && compressedFileInfo.size !== undefined) {
-              const compressedSizeMB = (compressedFileInfo.size / (1024 * 1024)).toFixed(2);
-              const compressedSizeKB = (compressedFileInfo.size / 1024).toFixed(2);
-              const compressionRatio = ((1 - compressedFileInfo.size / fileInfo.size) * 100).toFixed(1);
-              
-              console.log(`✅ 압축 완료: ${compressedSizeMB} MB (${compressedSizeKB} KB)`);
-              console.log(`📊 압축률: ${compressionRatio}% 감소`);
-              console.log(`📸 압축된 이미지 URI: ${finalImageUri}`);
-            }
-          } else {
-            console.log('✅ 이미지 크기가 적절합니다. 압축하지 않습니다.');
           }
-        } else {
-          console.warn('이미지 파일 정보를 가져올 수 없습니다.');
         }
       } catch (fileError) {
-        console.warn('파일 크기 확인/압축 실패:', fileError);
         // 압축 실패 시 원본 이미지 사용
         finalImageUri = photo.uri;
       }
@@ -145,14 +116,12 @@ export default function PrescriptionCaptureScreen({ mode: propMode, onCapture, s
         onCapture(finalImageUri);
       } else if (navigation) {
         // NavigationContainer 안에 있을 때는 네비게이션 사용
-        console.log('네비게이션으로 이동:', { imageUri: finalImageUri, mode: mode });
         navigation.navigate('PrescriptionProcessing', {
           imageUri: finalImageUri,
           mode: mode,
         });
       } else {
         // 네비게이션도 콜백도 없는 경우 에러
-        console.error('네비게이션과 콜백이 모두 없습니다.');
         setShowRetakeMessage(true);
         setTimeout(() => {
           setShowRetakeMessage(false);

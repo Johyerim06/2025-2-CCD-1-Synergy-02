@@ -67,7 +67,6 @@ export default function PrescriptionIntakeTimeSelectScreen({ umno, onNext }: Pre
 
       const response = await updateMedicationCombination(umno, combination);
       if (response.header?.resultCode === 1000) {
-        console.log('복약 시간대 조합 수정 성공:', response);
         onNext?.(selectedTimePeriods);
       } else {
         throw new Error(response.header?.resultMsg || '복약 시간대 조합 수정에 실패했습니다.');

@@ -81,8 +81,6 @@ export const uploadMedication = async (
     
     formData.append('mode', mode);
 
-    console.log('이미지 업로드 시작:', { mode, imageUri });
-
     const response = await api.post<BaseResponse<MedicationCreateResponse>>(
       '/medications',
       formData,
@@ -95,28 +93,9 @@ export const uploadMedication = async (
       }
     );
     
-    console.log('이미지 업로드 성공:', response.data);
     return response.data;
   } catch (error: any) {
     console.error('처방전 업로드 실패:', error);
-    
-    // 413 에러 상세 로깅
-    if (error.response?.status === 413) {
-      console.error('413 Payload Too Large 에러: 이미지 파일이 너무 큽니다.');
-      console.error('이미지 URI:', imageUri);
-      console.error('에러 응답:', error.response?.data);
-    }
-    
-    // 기타 에러 상세 로깅
-    if (error.response) {
-      console.error('에러 상태 코드:', error.response.status);
-      console.error('에러 응답 데이터:', error.response.data);
-    } else if (error.request) {
-      console.error('요청은 보냈지만 응답을 받지 못했습니다:', error.request);
-    } else {
-      console.error('요청 설정 중 에러:', error.message);
-    }
-    
     throw error;
   }
 };

@@ -1,13 +1,13 @@
 import axios, { AxiosResponse } from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
-// ⭐ 1) IP 주소만 따로 저장해두기
+
+// react native 에서는 localhost 사용이 불가하여 테스트 시 ip 주소를 변수로 사용
 const IP_ADDRESS = "192.168.219.104";
 
-// ⭐ 2) Base URL 만드는 함수
 const getBaseUrl = () => {
   if (__DEV__) {
-    // 👉 문자열 안에서 변수를 넣을 때는 ${변수명} 사용하기!
+
     return `http://${IP_ADDRESS}:8080`;
   }
   return 'https://your-production-url.com';
@@ -18,7 +18,7 @@ const BASE_URL = getBaseUrl();
 // axios 인스턴스 생성
 const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000, // 10초
+  timeout: 30000, // 30초로 증가 (로딩이 오래 걸릴 수 있음)
   headers: {
     'Content-Type': 'application/json',
   },
@@ -29,17 +29,11 @@ apiClient.interceptors.request.use(
   (config) => {
     // 토큰이 있다면 헤더에 추가
     const token = useAuthStore.getState().token;
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
-    if (config.data) {
-      console.log('[API Request Data]', config.data);
-    }
-    if (config.headers.Authorization) {
-      console.log('[API Request] Authorization header 포함됨');
-    }
     return config;
   },
   (error) => {
@@ -58,9 +52,6 @@ apiClient.interceptors.response.use(
       useAuthStore.getState().login(token);
     }
     
-    console.log(`[API Response] ${response.config.url}`);
-    console.log('[API Response Status]', response.status);
-    console.log('[API Response Data]', JSON.stringify(response.data, null, 2));
     return response;
   },
   (error) => {

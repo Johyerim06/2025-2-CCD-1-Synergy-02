@@ -121,7 +121,6 @@ export default function PrescriptionAnalysisResultScreen({
 
 
   const handleGoHome = () => {
-    console.log("홈으로 이동");
     onGoHome?.();
   };
 
@@ -138,7 +137,6 @@ export default function PrescriptionAnalysisResultScreen({
       try {
         const response = await updateMedicationCategory(umno, categoryText.trim());
         if (response.header?.resultCode === 1000) {
-          console.log('카테고리 수정 완료:', response);
           if (prescriptionData) {
             setPrescriptionData({
               ...prescriptionData,

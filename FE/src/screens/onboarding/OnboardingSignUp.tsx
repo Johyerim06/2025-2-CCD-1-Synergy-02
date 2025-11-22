@@ -63,14 +63,26 @@ export default function OnboardingSignUp({ onSignUpComplete }: OnboardingSignUpP
       console.log('회원가입 시작...');
       
       // 1. FCM 토큰 받아오기 (없어도 회원가입 진행)
+      // PlatformConstants 에러 방지를 위해 FCM 토큰 기능 일시적으로 비활성화
+      // TODO: New Architecture 문제 해결 후 재활성화
       console.log('FCM 토큰 요청 중...');
-      const fcmToken = await getFcmToken();
+      let fcmToken: string | null = null;
       
-      if (!fcmToken) {
-        console.warn('FCM 토큰을 받지 못했습니다. 알림이 제한될 수 있습니다.');
-        // FCM 토큰이 없어도 회원가입은 진행합니다
-      } else {
-        console.log('FCM 토큰 받기 성공:', fcmToken);
+      try {
+        // 런타임이 완전히 준비될 때까지 충분히 대기
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        fcmToken = await getFcmToken();
+        
+        if (!fcmToken) {
+          console.warn('FCM 토큰을 받지 못했습니다. 알림이 제한될 수 있습니다.');
+          // FCM 토큰이 없어도 회원가입은 진행합니다
+        } else {
+          console.log('FCM 토큰 받기 성공:', fcmToken);
+        }
+      } catch (error) {
+        console.warn('FCM 토큰 가져오기 실패 (회원가입은 계속 진행):', error);
+        // 에러가 발생해도 회원가입은 진행합니다
+        fcmToken = null;
       }
 
       // 2. 회원가입 API 호출

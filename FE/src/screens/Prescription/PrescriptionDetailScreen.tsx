@@ -103,12 +103,10 @@ export default function PrescriptionDetailScreen({ umno, onGoHome, onEditTime }:
   }, [umno]);
 
   const handleGoHome = () => {
-    console.log("홈으로 이동");
     onGoHome?.();
   };
 
   const handleEditTime = () => {
-    console.log("시간 수정");
     onEditTime?.();
   };
 

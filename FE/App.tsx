@@ -37,8 +37,9 @@ import BedTimeEditScreen from './src/screens/edit/BedTimeEditScreen';
 // 스플래시 화면을 자동으로 숨기지 않도록 설정
 SplashScreenExpo.preventAutoHideAsync();
 
-// 미리 로드할 모든 이미지
-const imageAssets = [
+// 이미지 assets를 lazy loading하기 위한 함수
+// 런타임이 준비된 후에만 require()가 실행되도록 함
+const getImageAssets = () => [
   require('./assets/SplashScreen.png'),
   require('./assets/images/BedTimeIcon.png'),
   require('./assets/images/caution.png'),
@@ -190,7 +191,8 @@ export default function App() {
   useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
-        // 모든 이미지 미리 로드
+        // 모든 이미지 미리 로드 (런타임 준비 후에만 require() 실행)
+        const imageAssets = getImageAssets();
         const imageAssetPromises = cacheImages(imageAssets);
         await Promise.all([...imageAssetPromises]);
         
@@ -369,6 +371,7 @@ export default function App() {
         }}
       />;
       case 'PrescriptionIntakeTimeSelectScreen': return <PrescriptionIntakeTimeSelectScreen 
+        umno={prescriptionUmno || 0}
         onNext={(timePeriods) => {
           setSelectedTimePeriods(timePeriods);
           setCurrentScreen('PrescriptionAnalysisResultScreen');
@@ -383,7 +386,7 @@ export default function App() {
         }} 
       />;
       case 'PrescriptionDetailScreen': return <PrescriptionDetailScreen 
-        medication={medications.find(m => m.id === selectedMedicationId)}
+        umno={prescriptionUmno || selectedMedicationId || 0}
         onGoHome={() => setCurrentScreen('Home')}
         onEditTime={() => {
           // 시간 수정 시작 - 처방전에서 선택한 시간대만
@@ -612,3 +615,5 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+
+console.log(Platform.OS);
