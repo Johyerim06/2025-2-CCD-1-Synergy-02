@@ -7,7 +7,7 @@ module.exports = function (api) {
         {
           // New Architecture 비활성화
           unstable_transformProfile: 'default',
-          // import.meta polyfill (Hermes용)
+          // import.meta polyfill
           unstable_transformImportMeta: true,
         },
       ],

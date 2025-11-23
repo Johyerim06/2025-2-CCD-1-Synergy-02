@@ -7,7 +7,7 @@
     "icon": "./assets/images/main_icon/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
-    "jsEngine": "hermes",
+    "jsEngine": "jsc",
     "splash": {
       "image": "./assets/images/main_icon/icon.png",
       "resizeMode": "contain",
@@ -21,7 +21,8 @@
         "foregroundImage": "./assets/images/main_icon/icon.png",
         "backgroundColor": "#FFCC02"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.synergy_dgu.bokjaapp"
     },
     "web": {
       "favicon": "./assets/images/main_icon/icon.png"

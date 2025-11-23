@@ -12,7 +12,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import responsive from '../../utils/responsive';
-import { getMedicationTime, updateMedicationTime } from '../../api/userApi';
+import { getMedicationTime, updateMedicationTime, setMedicationTime } from '../../api/userApi';
 import { getMedicationTimePresets } from '../../api/presetApi';
 
 interface MorningTimeEditScreenProps {
@@ -22,8 +22,9 @@ interface MorningTimeEditScreenProps {
 export default function MorningTimeEditScreen({ onNext }: MorningTimeEditScreenProps) {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
+  const [selectedTno, setSelectedTno] = useState<number | null>(null);
   const [utno, setUtno] = useState<number | null>(null);
-  const [times, setTimes] = useState<Array<{ label: string; hour: number }>>([]);
+  const [times, setTimes] = useState<Array<{ label: string; hour: number; tno: number }>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const { width } = useWindowDimensions();
@@ -39,13 +40,19 @@ export default function MorningTimeEditScreen({ onNext }: MorningTimeEditScreenP
       try {
         setIsLoadingData(true);
         
-        // 1. 기존 시간 조회
-        const currentTimeResponse = await getMedicationTime(TYPE);
-        if (currentTimeResponse.header?.resultCode === 1000 && currentTimeResponse.body) {
-          const currentHour = currentTimeResponse.body.time;
-          setUtno(currentTimeResponse.body.utno);
-          setSelectedHour(currentHour);
-          setSelectedTime(`${currentHour}시`);
+        // 1. 기존 시간 조회 (데이터가 없어도 에러 표시하지 않음)
+        let currentHour: number | null = null;
+        try {
+          const currentTimeResponse = await getMedicationTime(TYPE);
+          if (currentTimeResponse.header?.resultCode === 1000 && currentTimeResponse.body) {
+            currentHour = currentTimeResponse.body.time;
+            setUtno(currentTimeResponse.body.utno);
+            setSelectedHour(currentHour);
+            setSelectedTime(`${currentHour}시`);
+          }
+        } catch (error: any) {
+          // 복약 시간 정보가 없으면 빈 상태로 유지 (에러 표시하지 않음)
+          console.log('복약 시간 정보 없음:', error.response?.status === 404 ? '데이터 없음' : error.message);
         }
 
         // 2. 프리셋 조회
@@ -54,12 +61,22 @@ export default function MorningTimeEditScreen({ onNext }: MorningTimeEditScreenP
           const timeOptions = presetsResponse.body.times.map((preset) => ({
             label: `${preset.time}시`,
             hour: preset.time,
+            tno: preset.tno,
           }));
           setTimes(timeOptions);
+          
+          // 기존 시간이 있으면 해당하는 tno도 설정
+          if (currentHour !== null) {
+            const matchingPreset = presetsResponse.body.times.find((preset) => preset.time === currentHour);
+            if (matchingPreset) {
+              setSelectedTno(matchingPreset.tno);
+            }
+          }
         }
       } catch (error: any) {
-        console.error('데이터 로드 실패:', error);
-        Alert.alert('오류', '복약 시간 정보를 불러오는데 실패했습니다.');
+        console.error('프리셋 로드 실패:', error);
+        // 프리셋 로드 실패 시에만 에러 표시
+        Alert.alert('오류', '복약 시간 목록을 불러오는데 실패했습니다.');
       } finally {
         setIsLoadingData(false);
       }
@@ -69,34 +86,48 @@ export default function MorningTimeEditScreen({ onNext }: MorningTimeEditScreenP
 
   const isButtonActive = selectedTime !== null && !isLoading;
 
-  const handleTimeSelect = (time: string, hour: number) => {
+  const handleTimeSelect = (time: string, hour: number, tno: number) => {
     setSelectedTime(time);
     setSelectedHour(hour);
+    setSelectedTno(tno);
   };
 
   const handleSubmit = async () => {
-    if (!isButtonActive || selectedHour === null || utno === null) return;
+    if (!isButtonActive || selectedHour === null || selectedTno === null) return;
 
     setIsLoading(true);
     try {
-      const response = await updateMedicationTime(utno, {
-        type: TYPE,
-        time: selectedHour,
-      });
+      let response;
+      
+      if (utno === null) {
+        // 복약 시간 정보가 없으면 새로 생성
+        console.log('복약 시간 새로 생성:', selectedTno);
+        response = await setMedicationTime(selectedTno);
+      } else {
+        // 복약 시간 정보가 있으면 수정
+        console.log('복약 시간 수정:', utno);
+        response = await updateMedicationTime(utno, {
+          type: TYPE,
+          time: selectedHour,
+        });
+      }
       
       if (response.header?.resultCode === 1000) {
-        console.log('복약 시간 수정 성공:', response);
-        Alert.alert('수정 완료', '복약 시간이 수정되었습니다.', [
-          { text: '확인', onPress: () => onNext?.() },
-        ]);
+        console.log('복약 시간 저장 성공:', response);
+        // 저장 성공 후 응답에서 utno를 받아서 state 업데이트
+        if (response.body?.utno) {
+          setUtno(response.body.utno);
+        }
+        // 팝업 없이 바로 다음 화면으로 이동
+        onNext?.();
       } else {
-        throw new Error(response.header?.resultMsg || '복약 시간 수정에 실패했습니다.');
+        throw new Error(response.header?.resultMsg || '복약 시간 저장에 실패했습니다.');
       }
     } catch (error: any) {
-      console.error('복약 시간 수정 실패:', error);
+      console.error('복약 시간 저장 실패:', error);
       Alert.alert(
-        '수정 실패',
-        error.response?.data?.header?.resultMsg || error.response?.data?.message || error.message || '복약 시간 수정 중 오류가 발생했습니다.'
+        '저장 실패',
+        error.response?.data?.header?.resultMsg || error.response?.data?.message || error.message || '복약 시간 저장 중 오류가 발생했습니다.'
       );
     } finally {
       setIsLoading(false);
@@ -139,7 +170,7 @@ export default function MorningTimeEditScreen({ onNext }: MorningTimeEditScreenP
                       styles.timeButton,
                       isSelected ? styles.timeButtonSelected : styles.timeButtonUnselected,
                     ]}
-                    onPress={() => handleTimeSelect(timeOption.label, timeOption.hour)}
+                    onPress={() => handleTimeSelect(timeOption.label, timeOption.hour, timeOption.tno)}
                     disabled={isLoading}
                   >
                     <Text 

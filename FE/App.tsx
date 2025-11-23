@@ -62,10 +62,17 @@ const getImageAssets = () => [
   require('./assets/images/PillImage2.png'),
   require('./assets/images/SwellingEdema.png'),
   require('./assets/images/VoiceWaveIcon.png'),
-  require('./assets/images/Home/내정보수정아이콘.png'),
-  require('./assets/images/Home/약봉투아이콘.png'),
-  require('./assets/images/Home/약아이콘.png'),
-  require('./assets/images/Home/처방전아이콘.png'),
+  require('./assets/images/Home/EditInfoIcon.png'),
+  require('./assets/images/Home/PillBagIcon.png'),
+  require('./assets/images/Home/PillIcon.png'),
+  require('./assets/images/Home/PrescriptionIcon.png'),
+  require('./assets/images/OnboardingSignUpActivate/BokjaLogo2.png'),
+  require('./assets/images/PrescriptionAnalysisResultScreen/CombinationWarning.png'),
+  require('./assets/images/PrescriptionAnalysisResultScreen/Edit.png'),
+  require('./assets/images/PrescriptionIntakeTimeSelectScreen/Morning.png'),
+  require('./assets/images/PrescriptionIntakeTimeSelectScreen/Evening.png'),
+  require('./assets/images/PrescriptionIntakeTimeSelectScreen/Lunch.png'),
+  require('./assets/images/PrescriptionIntakeTimeSelectScreen/Bedtime.png'),
 ];
 
 // 이미지 캐싱 함수
@@ -616,4 +623,3 @@ const styles = StyleSheet.create({
   },
 });
 
-console.log(Platform.OS);

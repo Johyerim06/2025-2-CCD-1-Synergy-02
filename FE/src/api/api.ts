@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 
 
 // react native 에서는 localhost 사용이 불가하여 테스트 시 ip 주소를 변수로 사용
-const IP_ADDRESS = "192.168.219.104";
+const IP_ADDRESS = "000.000.000.000";
 
 const getBaseUrl = () => {
   if (__DEV__) {
